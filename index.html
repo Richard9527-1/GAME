@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>GAME</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="app">
+        <header class="main-header">
+            <h1 class="game-title">GAME</h1>
+            <button id="themeToggle" class="theme-btn" aria-label="切换主题">🌙</button>
+        </header>
+        <p class="subtitle">点击卡片·选择难度·开始挑战！单人和双人等你来玩</p>
+        <nav class="game-grid" id="gameGrid">
+            <a href="game-24.html" class="game-card"><div class="card-icon">🃏</div><h3 class="card-name">24点</h3><p class="card-desc">用4张牌凑出24</p><span class="card-badge">单人</span></a>
+            <a href="game-undercover.html" class="game-card"><div class="card-icon">🕵️</div><h3 class="card-name">谁是卧底</h3><p class="card-desc">找出隐藏的卧底</p><span class="card-badge">多人</span></a>
+            <a href="game-speedmath.html" class="game-card"><div class="card-icon">⚡</div><h3 class="card-name">速算对决</h3><p class="card-desc">快速口算挑战</p><span class="card-badge">单人/双人</span></a>
+            <a href="game-pinyin.html" class="game-card"><div class="card-icon">🔤</div><h3 class="card-name">拼音对决</h3><p class="card-desc">汉字拼音大考验</p><span class="card-badge">单人/双人</span></a>
+            <a href="game-radical.html" class="game-card"><div class="card-icon">✍️</div><h3 class="card-name">偏旁对决</h3><p class="card-desc">找出汉字的偏旁</p><span class="card-badge">单人/双人</span></a>
+            <a href="game-synant.html" class="game-card"><div class="card-icon">📚</div><h3 class="card-name">近反义词</h3><p class="card-desc">近义词反义词挑战</p><span class="card-badge">单人/双人</span></a>
+            <a href="game-classifier.html" class="game-card"><div class="card-icon">📦</div><h3 class="card-name">量词快配</h3><p class="card-desc">正确搭配量词</p><span class="card-badge">单人/双人</span></a>
+            <a href="game-emoji.html" class="game-card"><div class="card-icon">🎭</div><h3 class="card-name">Emoji猜词</h3><p class="card-desc">看Emoji猜词语</p><span class="card-badge">单人/双人</span></a>
+        </nav>
+        <footer class="main-footer">🎮 纯前端 · 离线可玩</footer>
+    </div>
+    <script src="shared.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const btn = document.getElementById('themeToggle');
+            const html = document.documentElement;
+            const saved = localStorage.getItem('theme') || 'light';
+            html.setAttribute('data-theme', saved);
+            btn.textContent = saved === 'dark' ? '☀️' : '🌙';
+            btn.addEventListener('click', function() {
+                const cur = html.getAttribute('data-theme');
+                const next = cur === 'dark' ? 'light' : 'dark';
+                html.setAttribute('data-theme', next);
+                localStorage.setItem('theme', next);
+                btn.textContent = next === 'dark' ? '☀️' : '🌙';
+            });
+        });
+    </script>
+</body>
+</html>

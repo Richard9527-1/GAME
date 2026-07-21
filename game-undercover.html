@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>谁是卧底 - GAME</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #d5e0ec;
+            --bg-card: #ffffff;
+            --text-primary: #2a3a4a;
+            --text-secondary: #6a7e92;
+            --text-light: #9aaeC2;
+            --accent: #e8a035;
+            --border-color: #bcc8d6;
+            --shadow: 0 4px 20px rgba(42, 58, 74, 0.12);
+            --shadow-hover: 0 8px 36px rgba(42, 58, 74, 0.20);
+            --radius: 20px;
+            --radius-sm: 12px;
+            --success: #7bcb7a;
+            --success-bg: #eaf5ea;
+            --error: #e86b6b;
+            --error-bg: #f5eaea;
+            --font: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #080c18;
+            --bg-card: #141c30;
+            --text-primary: #e8edf5;
+            --text-secondary: #8899b8;
+            --text-light: #556688;
+            --accent: #00c8e8;
+            --border-color: #1e2a44;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+            --shadow-hover: 0 8px 40px rgba(0, 200, 232, 0.10);
+            --success: #00d4a0;
+            --success-bg: #0a2a22;
+            --error: #ff6b8a;
+            --error-bg: #2a0a18;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 820px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            margin-bottom: 16px;
+            transition: background 0.3s, border 0.3s;
+        }
+
+        .game-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .content {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            min-height: 320px;
+            transition: background 0.3s, border 0.3s;
+        }
+
+        .bottom-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 14px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .btn-back {
+            padding: 8px 18px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s, border 0.3s, color 0.3s;
+        }
+        .btn-back:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary {
+            padding: 8px 18px;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: 30px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.3s, border 0.3s, color 0.3s;
+        }
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .btn-primary {
+            padding: 10px 28px;
+            background: var(--accent);
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 14px rgba(232, 160, 53, 0.2);
+            transition: background 0.3s;
+        }
+        [data-theme="dark"] .btn-primary {
+            color: #080c18;
+        }
+        .btn-primary:active {
+            transform: scale(0.96);
+        }
+
+        .start-screen {
+            text-align: center;
+            padding: 20px 10px;
+        }
+        .start-screen .icon {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+        .start-screen h2 {
+            font-size: 1.6rem;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+        .start-screen .desc {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .setup-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            max-width: 400px;
+            margin: 0 auto 16px;
+        }
+
+        .setup-item {
+            text-align: left;
+        }
+        .setup-item label {
+            display: block;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+        .setup-item select {
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font);
+            outline: none;
+            transition: border 0.3s;
+        }
+        .setup-item select:focus {
+            border-color: var(--accent);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        .game-status {
+            text-align: center;
+            padding: 10px;
+            font-size: 1rem;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 12px;
+        }
+        .game-status .highlight {
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* 查看词 */
+        .view-card {
+            max-width: 400px;
+            margin: 0 auto;
+            text-align: center;
+            padding: 20px 0;
+        }
+        .view-card .word-display {
+            font-size: 3.5rem;
+            font-weight: 900;
+            color: var(--accent);
+            padding: 30px 0;
+            min-height: 120px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-primary);
+            border-radius: var(--radius);
+            border: 3px dashed var(--border-color);
+            margin: 12px 0;
+        }
+        .view-card .word-display.hidden {
+            color: var(--text-light);
+            font-size: 1.2rem;
+        }
+        .view-card .player-turn {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+        .view-card .hint-text {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            margin: 8px 0;
+        }
+        .view-card .btn-view {
+            padding: 12px 40px;
+            background: var(--accent);
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-family: var(--font);
+            transition: all 0.2s;
+        }
+        [data-theme="dark"] .view-card .btn-view {
+            color: #080c18;
+        }
+        .view-card .btn-view:hover {
+            transform: scale(1.05);
+        }
+
+        .player-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+            gap: 8px;
+            margin: 12px 0;
+        }
+        .player-tag {
+            padding: 8px 6px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+            border: 2px solid var(--border-color);
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.85rem;
+            transition: all 0.2s;
+        }
+        .player-tag.active {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+        .player-tag.eliminated {
+            opacity: 0.3;
+            text-decoration: line-through;
+        }
+
+        /* 结束揭晓 */
+        .reveal-area {
+            text-align: center;
+            padding: 20px 0;
+        }
+        .reveal-area .reveal-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+        .reveal-area .reveal-title {
+            font-size: 1.6rem;
+            font-weight: 900;
+            margin-bottom: 6px;
+        }
+        .reveal-area .word-compare {
+            display: flex;
+            justify-content: center;
+            gap: 30px;
+            margin: 16px 0;
+            flex-wrap: wrap;
+        }
+        .reveal-area .word-box {
+            padding: 12px 24px;
+            border-radius: var(--radius-sm);
+            border: 3px solid;
+            min-width: 120px;
+        }
+        .reveal-area .word-box.civilian-box {
+            border-color: var(--success);
+            background: var(--success-bg);
+        }
+        .reveal-area .word-box.undercover-box {
+            border-color: var(--error);
+            background: var(--error-bg);
+        }
+        .reveal-area .word-box .word-label {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        .reveal-area .word-box .word-value {
+            font-size: 2rem;
+            font-weight: 900;
+        }
+        .reveal-area .word-box.civilian-box .word-value {
+            color: var(--success);
+        }
+        .reveal-area .word-box.undercover-box .word-value {
+            color: var(--error);
+        }
+
+        .reveal-area .reveal-detail {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            margin-top: 8px;
+        }
+
+        .reveal-area .role-reveal {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
+            gap: 8px;
+            max-width: 400px;
+            margin: 12px auto;
+        }
+        .reveal-area .role-reveal .rr-item {
+            padding: 8px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            font-size: 0.85rem;
+        }
+        .reveal-area .role-reveal .rr-role {
+            font-weight: 700;
+        }
+        .reveal-area .role-reveal .rr-role.civilian {
+            color: var(--success);
+        }
+        .reveal-area .role-reveal .rr-role.undercover {
+            color: var(--error);
+        }
+
+        @media (max-width: 640px) {
+            .header {
+                padding: 10px 12px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 4px;
+            }
+            .game-name {
+                text-align: center;
+                font-size: 1rem;
+            }
+            .content {
+                padding: 14px 10px;
+                min-height: 240px;
+            }
+            .setup-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .view-card .word-display {
+                font-size: 2.8rem;
+                min-height: 90px;
+            }
+            .player-list {
+                grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+                gap: 6px;
+            }
+            .player-tag {
+                font-size: 0.75rem;
+                padding: 6px 4px;
+            }
+            .reveal-area .word-box .word-value {
+                font-size: 1.5rem;
+            }
+            .reveal-area .word-compare {
+                gap: 12px;
+            }
+            .reveal-area .role-reveal {
+                grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+            }
+        }
+
+        @media (max-width: 400px) {
+            .view-card .word-display {
+                font-size: 2rem;
+                min-height: 70px;
+            }
+            .player-list {
+                grid-template-columns: repeat(auto-fill, minmax(55px, 1fr));
+            }
+            .player-tag {
+                font-size: 0.65rem;
+                padding: 4px 2px;
+            }
+            .btn-primary {
+                padding: 8px 16px;
+                font-size: 0.8rem;
+            }
+            .reveal-area .word-box .word-value {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <script>
+        (function() {
+            var saved = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
+
+    <div class="container">
+        <header class="header">
+            <div class="game-name">🕵️ 谁是卧底</div>
+        </header>
+
+        <div class="content" id="gameContent"></div>
+
+        <div class="bottom-bar">
+            <a class="btn-back" href="index.html">← 返回主菜单</a>
+            <button class="btn-secondary" id="resetBtn">🔄 重新开始</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="resultModal">
+        <div class="modal" id="resultModalContent"></div>
+    </div>
+
+    <script src="data/undercover-data.js"></script>
+    <script>
+        // ============================================================
+        // 谁是卧底 - 极简版（只发词，不投票）
+        // 描述和投票全部线下口头进行
+        // ============================================================
+
+        function applyTheme() {
+            var saved = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', saved);
+        }
+        applyTheme();
+
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'theme') applyTheme();
+        });
+
+        var lastTheme = localStorage.getItem('theme') || 'light';
+        setInterval(function() {
+            var current = localStorage.getItem('theme') || 'light';
+            if (current !== lastTheme) {
+                lastTheme = current;
+                applyTheme();
+            }
+        }, 2000);
+
+        var $content = document.getElementById('gameContent');
+        var $resetBtn = document.getElementById('resetBtn');
+
+        function shuffle(arr) {
+            for (var i = arr.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+            }
+            return arr;
+        }
+
+        function pick(arr) {
+            return arr[Math.floor(Math.random() * arr.length)];
+        }
+
+        var GAME_STATE = {
+            SETUP: 'setup',
+            VIEWING: 'viewing',
+            REVEAL: 'reveal'
+        };
+
+        var state = GAME_STATE.SETUP;
+        var totalPlayers = 6;
+        var undercoverCount = 1;
+        var players = [];
+        var currentViewIndex = 0;
+        var wordPair = null;
+        var civilianWord = '';
+        var undercoverWord = '';
+        var usedPairs = [];
+
+        function render() {
+            if (state === GAME_STATE.SETUP) renderSetup();
+            else if (state === GAME_STATE.VIEWING) renderViewing();
+            else if (state === GAME_STATE.REVEAL) renderReveal();
+        }
+
+        // ----- 设置 -----
+        function renderSetup() {
+            $content.innerHTML = `
+                <div class="start-screen">
+                    <div class="icon">🕵️</div>
+                    <h2>谁是卧底</h2>
+                    <p class="desc">3-10名玩家 · 1-2名卧底</p>
+                    <p class="desc" style="font-size:0.85rem;color:var(--text-light);">📱 手机只负责发词，描述和投票全部口头进行</p>
+                    <div class="setup-grid">
+                        <div class="setup-item">
+                            <label>👥 玩家人数</label>
+                            <select id="playerCount">
+                                <option value="3">3人</option>
+                                <option value="4">4人</option>
+                                <option value="5">5人</option>
+                                <option value="6" selected>6人</option>
+                                <option value="7">7人</option>
+                                <option value="8">8人</option>
+                                <option value="9">9人</option>
+                                <option value="10">10人</option>
+                            </select>
+                        </div>
+                        <div class="setup-item">
+                            <label>🕵️ 卧底人数</label>
+                            <select id="undercoverCount">
+                                <option value="1" selected>1人</option>
+                                <option value="2">2人</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:12px;">
+                        💡 6人以下1个卧底，7人以上可2个
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn-primary" onclick="startGame()">🎮 开始游戏</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function startGame() {
+            totalPlayers = parseInt(document.getElementById('playerCount').value);
+            undercoverCount = parseInt(document.getElementById('undercoverCount').value);
+
+            if (undercoverCount >= totalPlayers / 2) {
+                undercoverCount = Math.max(1, Math.floor(totalPlayers / 2) - 1);
+            }
+
+            players = [];
+            usedPairs = [];
+
+            var pair = getUndercoverPair();
+            wordPair = pair;
+            civilianWord = pair.civilian;
+            undercoverWord = pair.undercover;
+
+            var roles = [];
+            for (var i = 0; i < undercoverCount; i++) roles.push('undercover');
+            for (var i = undercoverCount; i < totalPlayers; i++) roles.push('civilian');
+            shuffle(roles);
+
+            for (var i = 0; i < totalPlayers; i++) {
+                var word = roles[i] === 'civilian' ? civilianWord : undercoverWord;
+                players.push({
+                    id: i,
+                    name: '玩家' + (i + 1),
+                    role: roles[i],
+                    word: word
+                });
+            }
+
+            currentViewIndex = 0;
+            state = GAME_STATE.VIEWING;
+            render();
+        }
+
+        // ----- 查看词 -----
+        function renderViewing() {
+            var currentPlayer = players[currentViewIndex];
+            var total = players.length;
+
+            if (currentViewIndex >= total) {
+                state = GAME_STATE.REVEAL;
+                render();
+                return;
+            }
+
+            $content.innerHTML = `
+                <div class="view-card">
+                    <div class="game-status">📖 发词 · <span class="highlight">${currentViewIndex + 1}/${total}</span></div>
+                    <div class="player-turn">👤 ${currentPlayer.name} 请查看</div>
+                    <div class="hint-text">⚠️ 请记住你的词，不要让别人看到！</div>
+                    <div class="word-display hidden" id="wordDisplay">👆 点击下方按钮查看</div>
+                    <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap;">
+                        <button class="btn-view" id="viewBtn" onclick="revealWord()">👁️ 查看我的词</button>
+                        <button class="btn-view" id="nextBtn" style="background:var(--success);display:none;" onclick="nextViewer()">✅ 已记住，下一个</button>
+                    </div>
+                    <div class="player-list">
+                        ${players.map(function(p, idx) {
+                            var cls = 'player-tag';
+                            if (idx === currentViewIndex) cls += ' active';
+                            return '<div class="' + cls + '">' + p.name + (idx === currentViewIndex ? ' 👀' : '') + '</div>';
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        var wordRevealed = false;
+
+        function revealWord() {
+            if (wordRevealed) return;
+            wordRevealed = true;
+            var currentPlayer = players[currentViewIndex];
+            var display = document.getElementById('wordDisplay');
+            display.textContent = currentPlayer.word;
+            display.className = 'word-display';
+            document.getElementById('viewBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'inline-block';
+        }
+
+        function nextViewer() {
+            wordRevealed = false;
+            currentViewIndex++;
+            render();
+        }
+
+        // ----- 揭晓 -----
+        function renderReveal() {
+            $content.innerHTML = `
+                <div class="reveal-area">
+                    <div class="reveal-icon">🕵️</div>
+                    <div class="reveal-title">词语揭晓</div>
+                    <div class="reveal-detail">所有玩家已看完词，开始口头描述和投票吧！</div>
+
+                    <div class="word-compare">
+                        <div class="word-box civilian-box">
+                            <div class="word-label">👤 平民词</div>
+                            <div class="word-value">${civilianWord}</div>
+                        </div>
+                        <div class="word-box undercover-box">
+                            <div class="word-label">🕵️ 卧底词</div>
+                            <div class="word-value">${undercoverWord}</div>
+                        </div>
+                    </div>
+
+                    <div style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:8px;">📋 角色分配：</div>
+                    <div class="role-reveal">
+                        ${players.map(function(p) {
+                            var roleLabel = p.role === 'civilian' ? '👤 平民' : '🕵️ 卧底';
+                            var roleClass = p.role === 'civilian' ? 'civilian' : 'undercover';
+                            return '<div class="rr-item">' + p.name + '<br><span class="rr-role ' + roleClass + '">' + roleLabel + '</span></div>';
+                        }).join('')}
+                    </div>
+
+                    <div style="margin-top:12px;font-size:0.85rem;color:var(--text-secondary);">
+                        💡 平民和卧底分别记住自己的词，开始描述和投票！
+                    </div>
+
+                    <div class="btn-group" style="margin-top:16px;">
+                        <button class="btn-primary" onclick="startNewGame()">🔄 再来一局</button>
+                        <button class="btn-secondary" onclick="resetGame()">🏠 返回</button>
+                    </div>
+                </div>
+            `;
+        }
+
+        function startNewGame() {
+            startGame();
+        }
+
+        function resetGame() {
+            state = GAME_STATE.SETUP;
+            players = [];
+            renderSetup();
+        }
+
+        function getUndercoverPair() {
+            if (typeof UNDERCOVER_WORDS !== 'undefined' && UNDERCOVER_WORDS.length > 0) {
+                var available = UNDERCOVER_WORDS.filter(function(pair) {
+                    var key = pair[0] + '-' + pair[1];
+                    return usedPairs.indexOf(key) === -1;
+                });
+                if (available.length === 0) {
+                    usedPairs = [];
+                    available = UNDERCOVER_WORDS;
+                }
+                var pair = pick(available);
+                var key = pair[0] + '-' + pair[1];
+                usedPairs.push(key);
+                if (Math.random() > 0.5) {
+                    return { civilian: pair[0], undercover: pair[1] };
+                } else {
+                    return { civilian: pair[1], undercover: pair[0] };
+                }
+            }
+            var fallback = [
+                ['苹果', '梨'],
+                ['猫', '狗'],
+                ['太阳', '月亮'],
+                ['医生', '护士'],
+                ['足球', '篮球']
+            ];
+            var pair = pick(fallback);
+            if (Math.random() > 0.5) {
+                return { civilian: pair[0], undercover: pair[1] };
+            } else {
+                return { civilian: pair[1], undercover: pair[0] };
+            }
+        }
+
+        // ----- 事件绑定 -----
+        $resetBtn.addEventListener('click', function() {
+            if (confirm('确定重新开始吗？')) resetGame();
+        });
+
+        // ----- 启动 -----
+        renderSetup();
+        console.log('🕵️ 谁是卧底已加载');
+    </script>
+</body>
+</html>

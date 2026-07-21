@@ -1,0 +1,1760 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>拼音对决 - GAME</title>
+    <style>
+        /* ===== 所有样式内嵌，支持日间/夜间 ===== */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #d5e0ec;
+            --bg-card: #ffffff;
+            --text-primary: #2a3a4a;
+            --text-secondary: #6a7e92;
+            --text-light: #9aaeC2;
+            --accent: #e8a035;
+            --border-color: #bcc8d6;
+            --shadow: 0 4px 20px rgba(42, 58, 74, 0.12);
+            --success: #7bcb7a;
+            --success-bg: #eaf5ea;
+            --error: #e86b6b;
+            --error-bg: #f5eaea;
+            --font: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #080c18;
+            --bg-card: #141c30;
+            --text-primary: #e8edf5;
+            --text-secondary: #8899b8;
+            --text-light: #556688;
+            --accent: #00c8e8;
+            --border-color: #1e2a44;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+            --success: #00d4a0;
+            --success-bg: #0a2a22;
+            --error: #ff6b8a;
+            --error-bg: #2a0a18;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 820px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        /* ===== 顶部 ===== */
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            margin-bottom: 16px;
+            transition: background 0.3s, border 0.3s;
+        }
+
+        .game-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stats {
+            display: flex;
+            gap: 14px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .stats .num {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .mode-toggle {
+            display: flex;
+            gap: 4px;
+            background: var(--bg-primary);
+            border-radius: 30px;
+            padding: 4px;
+            border: 1px solid var(--border-color);
+        }
+        .mode-toggle button {
+            padding: 4px 14px;
+            border: none;
+            border-radius: 30px;
+            background: transparent;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.75rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.3s, color 0.3s;
+        }
+        .mode-toggle button.active {
+            background: var(--accent);
+            color: #fff;
+        }
+
+        /* ===== 内容 ===== */
+        .content {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 20px 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            min-height: 320px;
+            transition: background 0.3s, border 0.3s;
+        }
+
+        /* ===== 底部 ===== */
+        .bottom-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 14px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .btn-back {
+            padding: 8px 18px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s, border 0.3s, color 0.3s;
+        }
+        .btn-back:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary {
+            padding: 8px 18px;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: 30px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.3s, border 0.3s, color 0.3s;
+        }
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .btn-primary {
+            padding: 10px 28px;
+            background: var(--accent);
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 14px rgba(232, 160, 53, 0.2);
+            transition: background 0.3s;
+        }
+        [data-theme="dark"] .btn-primary {
+            color: #080c18;
+        }
+        .btn-primary:active {
+            transform: scale(0.96);
+        }
+
+        /* ===== 开始界面 ===== */
+        .start-screen {
+            text-align: center;
+            padding: 20px 10px;
+        }
+        .start-screen .icon {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+        .start-screen h2 {
+            font-size: 1.6rem;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+        .start-screen .desc {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .diff-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 480px;
+            margin: 0 auto 16px;
+        }
+        .diff-card {
+            padding: 14px 10px;
+            background: var(--bg-primary);
+            border: 3px solid var(--border-color);
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .diff-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        .diff-card .d-icon {
+            font-size: 1.8rem;
+        }
+        .diff-card .d-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+        .diff-card .d-grade {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        .diff-card .d-desc {
+            font-size: 0.65rem;
+            color: var(--text-light);
+        }
+        .diff-card.selected {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+        [data-theme="dark"] .diff-card.selected {
+            background: rgba(0, 200, 232, 0.15);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        /* ===== 单人 ===== */
+        .single-area {
+            max-width: 480px;
+            margin: 0 auto;
+        }
+        .single-area .q-big {
+            font-size: 2.8rem;
+            font-weight: 800;
+            text-align: center;
+            padding: 16px 0 12px;
+            color: var(--text-primary);
+        }
+        .single-area .opts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .single-area .opt {
+            padding: 14px;
+            background: var(--bg-primary);
+            border: 3px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-family: inherit;
+            text-align: center;
+            transition: background 0.3s, border 0.3s, color 0.3s;
+        }
+        .single-area .opt:hover:not(.disabled) {
+            border-color: var(--accent);
+            transform: scale(1.02);
+        }
+        .single-area .opt.correct {
+            border-color: var(--success);
+            background: var(--success-bg);
+        }
+        .single-area .opt.wrong {
+            border-color: var(--error);
+            background: var(--error-bg);
+        }
+        .single-area .opt.disabled {
+            cursor: not-allowed;
+            opacity: 0.4;
+        }
+        .single-area .progress {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        /* ===== 双人 ===== */
+        .duel-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            background: var(--bg-primary);
+            border-radius: 20px;
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+            min-height: 460px;
+        }
+
+        .duel-player {
+            flex: 1;
+            padding: 8px 14px 6px;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: var(--bg-card);
+        }
+        .duel-player.bottom {
+            border-top: 2px solid var(--border-color);
+        }
+        .duel-player.top {
+            transform: rotate(180deg);
+            border-bottom: 2px solid var(--border-color);
+        }
+        .duel-player.top .duel-inner {
+            transform: none;
+        }
+        .duel-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .duel-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 0.8rem;
+            padding: 0 2px;
+            color: var(--text-primary);
+        }
+        .duel-row .pname.p1 {
+            color: #e8a035;
+        }
+        .duel-row .pname.p2 {
+            color: #5b9bd5;
+        }
+        [data-theme="dark"] .duel-row .pname.p1 {
+            color: #ffb300;
+        }
+        [data-theme="dark"] .duel-row .pname.p2 {
+            color: #00b0ff;
+        }
+        .duel-row .pscore {
+            font-size: 1rem;
+            background: var(--bg-primary);
+            padding: 1px 12px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .duel-q {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            padding: 4px 0 2px;
+            color: var(--text-primary);
+        }
+
+        .duel-opts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px;
+            max-width: 360px;
+            margin: 0 auto;
+            width: 100%;
+        }
+        .duel-opt {
+            padding: 8px 6px;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-family: inherit;
+            text-align: center;
+            min-height: 40px;
+            transition: background 0.3s, border 0.3s, color 0.3s;
+        }
+        .duel-opt:hover:not(.disabled) {
+            border-color: var(--accent);
+            transform: scale(1.02);
+        }
+        .duel-opt.correct {
+            border-color: var(--success);
+            background: var(--success-bg);
+        }
+        .duel-opt.wrong {
+            border-color: var(--error);
+            background: var(--error-bg);
+        }
+        .duel-opt.disabled {
+            cursor: not-allowed;
+            opacity: 0.4;
+        }
+
+        .duel-middle {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 6px 16px;
+            background: var(--bg-primary);
+            border-top: 2px solid var(--border-color);
+            border-bottom: 2px solid var(--border-color);
+            font-weight: 700;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+            gap: 12px;
+        }
+        .duel-middle .mid-left {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            justify-content: flex-end;
+            flex: 1;
+        }
+        .duel-middle .mid-left .num {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: #e8a035;
+            min-width: 32px;
+            text-align: center;
+        }
+        [data-theme="dark"] .duel-middle .mid-left .num {
+            color: #ffb300;
+        }
+        .duel-middle .mid-right {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            justify-content: flex-start;
+            flex: 1;
+            transform: rotate(180deg);
+        }
+        .duel-middle .mid-right .num {
+            font-size: 1.6rem;
+            font-weight: 900;
+            color: #5b9bd5;
+            min-width: 32px;
+            text-align: center;
+        }
+        [data-theme="dark"] .duel-middle .mid-right .num {
+            color: #00b0ff;
+        }
+        .duel-middle .vs {
+            font-size: 1.4rem;
+            color: var(--accent);
+            font-weight: 900;
+        }
+        .duel-middle .prog {
+            font-size: 0.65rem;
+            color: var(--text-light);
+            padding: 1px 8px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .duel-status {
+            text-align: center;
+            font-size: 0.7rem;
+            color: var(--text-light);
+            min-height: 16px;
+            padding-top: 2px;
+        }
+        .duel-status.ok {
+            color: var(--success);
+        }
+        .duel-status.fail {
+            color: var(--error);
+        }
+
+        /* ===== 弹窗 ===== */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 28px 24px 24px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            border: 1px solid var(--border-color);
+            max-height: 90vh;
+            overflow-y: auto;
+            transition: background 0.3s, border 0.3s;
+        }
+        .modal .m-icon {
+            font-size: 3.2rem;
+            margin-bottom: 4px;
+        }
+        .modal h2 {
+            font-size: 1.4rem;
+            margin-bottom: 2px;
+            color: var(--text-primary);
+        }
+        .modal .m-score {
+            font-size: 2.6rem;
+            font-weight: 900;
+            color: var(--accent);
+            margin: 4px 0;
+        }
+        .modal .m-detail {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        .modal .m-rank {
+            background: var(--bg-primary);
+            border-radius: 12px;
+            padding: 10px 14px;
+            margin: 8px 0 14px;
+            font-size: 0.85rem;
+            text-align: left;
+        }
+        .modal .m-rank .rank-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        .modal .m-rank .rank-item:last-child {
+            border-bottom: none;
+        }
+        .modal .m-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 640px) {
+            .header {
+                padding: 10px 12px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 4px;
+            }
+            .game-name {
+                text-align: center;
+                font-size: 1rem;
+            }
+            .stats {
+                justify-content: center;
+                font-size: 0.7rem;
+                gap: 10px;
+            }
+            .mode-toggle {
+                justify-content: center;
+            }
+            .content {
+                padding: 14px 10px;
+                min-height: 240px;
+            }
+            .single-area .q-big {
+                font-size: 2.2rem;
+            }
+            .single-area .opt {
+                font-size: 1.2rem;
+                padding: 12px;
+            }
+            .duel-player {
+                padding: 6px 10px 4px;
+                min-height: 120px;
+            }
+            .duel-q {
+                font-size: 1.5rem;
+            }
+            .duel-opt {
+                font-size: 1.1rem;
+                padding: 6px 4px;
+                min-height: 34px;
+            }
+            .duel-middle .mid-left .num,
+            .duel-middle .mid-right .num {
+                font-size: 1.4rem;
+                min-width: 26px;
+            }
+            .duel-middle .vs {
+                font-size: 1.2rem;
+            }
+            .diff-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 6px;
+            }
+            .diff-card {
+                padding: 10px 6px;
+            }
+            .diff-card .d-icon {
+                font-size: 1.4rem;
+            }
+            .diff-card .d-name {
+                font-size: 0.8rem;
+            }
+            .modal {
+                padding: 20px 16px;
+            }
+            .modal .m-score {
+                font-size: 2rem;
+            }
+            .start-screen .icon {
+                font-size: 3rem;
+            }
+            .start-screen h2 {
+                font-size: 1.3rem;
+            }
+            .btn-primary {
+                padding: 8px 20px;
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .single-area .q-big {
+                font-size: 1.8rem;
+            }
+            .single-area .opt {
+                font-size: 1rem;
+                padding: 10px;
+            }
+            .duel-q {
+                font-size: 1.2rem;
+            }
+            .duel-opt {
+                font-size: 0.95rem;
+                min-height: 30px;
+            }
+            .duel-middle .mid-left .num,
+            .duel-middle .mid-right .num {
+                font-size: 1.2rem;
+                min-width: 22px;
+            }
+            .duel-player {
+                padding: 4px 6px 2px;
+                min-height: 100px;
+            }
+            .diff-grid {
+                grid-template-columns: 1fr;
+                gap: 4px;
+            }
+        }
+
+        @media (min-width: 768px) and (orientation: landscape) {
+            .duel-container {
+                flex-direction: row;
+                min-height: 360px;
+            }
+            .duel-player.bottom {
+                border-top: none;
+                border-left: 2px solid var(--border-color);
+            }
+            .duel-player.top {
+                transform: rotate(180deg);
+                border-bottom: none;
+                border-right: 2px solid var(--border-color);
+            }
+            .duel-middle {
+                flex-direction: column;
+                padding: 10px 8px;
+                border-top: none;
+                border-bottom: none;
+                border-left: 2px solid var(--border-color);
+                border-right: 2px solid var(--border-color);
+                min-width: 60px;
+                gap: 4px;
+            }
+            .duel-middle .mid-left {
+                justify-content: center;
+                flex: none;
+                flex-direction: column;
+                gap: 2px;
+            }
+            .duel-middle .mid-right {
+                justify-content: center;
+                flex: none;
+                flex-direction: column;
+                gap: 2px;
+                transform: rotate(180deg);
+            }
+            .duel-middle .vs {
+                font-size: 1.6rem;
+            }
+            .duel-middle .prog {
+                margin-left: 0;
+                font-size: 0.6rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部 -->
+        <header class="header">
+            <div class="game-name">🔤 拼音对决</div>
+            <div class="stats">
+                <span>🏆 最高连对: <span class="num" id="bestScore">0</span></span>
+                <span>📊 当前: <span class="num" id="currentStreak">0</span></span>
+            </div>
+            <div class="mode-toggle" id="modeToggle">
+                <button class="active" data-mode="single">🧑 单人</button>
+                <button data-mode="double">👫 双人</button>
+            </div>
+        </header>
+
+        <!-- 内容 -->
+        <div class="content" id="gameContent"></div>
+
+        <!-- 底部 -->
+        <div class="bottom-bar">
+            <a class="btn-back" href="index.html" id="backBtn">← 返回主菜单</a>
+            <button class="btn-secondary" id="resetBtn">🔄 重新开始</button>
+        </div>
+    </div>
+
+    <!-- 弹窗 -->
+    <div class="modal-overlay" id="resultModal">
+        <div class="modal" id="resultModalContent"></div>
+    </div>
+
+    <script>
+        // ============================================================
+        // 拼音对决 - 完整版
+        // 支持：单字 + 词组，夜间模式同步
+        // ============================================================
+
+        // ----- 主题同步 -----
+        function applyTheme() {
+            var saved = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', saved);
+        }
+        applyTheme();
+
+        // 监听主题变化（从主菜单或其他页面）
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'theme') {
+                applyTheme();
+            }
+        });
+
+        // 返回主菜单时，确保主题已保存
+        document.getElementById('backBtn').addEventListener('click', function(e) {
+            // 不需要额外操作，主题已保存在 localStorage
+        });
+
+        // ----- DOM -----
+        var $content = document.getElementById('gameContent');
+        var $best = document.getElementById('bestScore');
+        var $streak = document.getElementById('currentStreak');
+        var $resetBtn = document.getElementById('resetBtn');
+        var $modal = document.getElementById('resultModal');
+        var $modalContent = document.getElementById('resultModalContent');
+
+        // ----- 工具 -----
+        function shuffle(arr) {
+            for (var i = arr.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+            }
+            return arr;
+        }
+
+        function getBestScore(key) {
+            try {
+                var data = localStorage.getItem('rank_' + key);
+                var list = data ? JSON.parse(data) : [];
+                if (list.length === 0) return 0;
+                var max = 0;
+                for (var i = 0; i < list.length; i++) {
+                    if (list[i].score > max) max = list[i].score;
+                }
+                return max;
+            } catch (e) { return 0; }
+        }
+
+        function saveRank(key, score) {
+            try {
+                var data = localStorage.getItem('rank_' + key);
+                var list = data ? JSON.parse(data) : [];
+                list.push({ score: score, time: Date.now() });
+                if (list.length > 50) list.shift();
+                localStorage.setItem('rank_' + key, JSON.stringify(list));
+            } catch (e) {}
+        }
+
+        function getRankList(key, limit) {
+            try {
+                var data = localStorage.getItem('rank_' + key);
+                var list = data ? JSON.parse(data) : [];
+                list.sort(function(a, b) { return b.score - a.score; });
+                return list.slice(0, limit || 10);
+            } catch (e) { return []; }
+        }
+
+        // ============================================================
+        // 题库 - 单字 + 词组
+        // ============================================================
+        var PINYIN_CHARS = {
+            // ----- 单字 (简单) -----
+            easy: [
+                { char: '爸', pinyin: 'bà', errors: ['bā', 'bǎ', 'bá'] },
+                { char: '妈', pinyin: 'mā', errors: ['má', 'mǎ', 'mà'] },
+                { char: '大', pinyin: 'dà', errors: ['dā', 'dá', 'dǎ'] },
+                { char: '小', pinyin: 'xiǎo', errors: ['xiāo', 'xiáo', 'xiào'] },
+                { char: '上', pinyin: 'shàng', errors: ['shāng', 'sháng', 'shǎng'] },
+                { char: '下', pinyin: 'xià', errors: ['xiā', 'xiá', 'xiǎ'] },
+                { char: '人', pinyin: 'rén', errors: ['rēn', 'rěn', 'rèn'] },
+                { char: '口', pinyin: 'kǒu', errors: ['kōu', 'kóu', 'kòu'] },
+                { char: '手', pinyin: 'shǒu', errors: ['shōu', 'shóu', 'shòu'] },
+                { char: '日', pinyin: 'rì', errors: ['rī', 'rí', 'rǐ'] },
+                { char: '月', pinyin: 'yuè', errors: ['yuē', 'yué', 'yuě'] },
+                { char: '水', pinyin: 'shuǐ', errors: ['shuī', 'shuí', 'shuì'] },
+                { char: '火', pinyin: 'huǒ', errors: ['huō', 'huó', 'huò'] },
+                { char: '山', pinyin: 'shān', errors: ['shán', 'shǎn', 'shàn'] },
+                { char: '石', pinyin: 'shí', errors: ['shī', 'shǐ', 'shì'] },
+                { char: '田', pinyin: 'tián', errors: ['tiān', 'tiǎn', 'tiàn'] },
+                { char: '木', pinyin: 'mù', errors: ['mū', 'mú', 'mǔ'] },
+                { char: '花', pinyin: 'huā', errors: ['huá', 'huǎ', 'huà'] },
+                { char: '草', pinyin: 'cǎo', errors: ['cāo', 'cáo', 'cào'] },
+                { char: '鸟', pinyin: 'niǎo', errors: ['niāo', 'niáo', 'niào'] },
+                { char: '鱼', pinyin: 'yú', errors: ['yū', 'yǔ', 'yù'] },
+                { char: '马', pinyin: 'mǎ', errors: ['mā', 'má', 'mà'] },
+                { char: '牛', pinyin: 'niú', errors: ['niū', 'niǔ', 'niù'] },
+                { char: '羊', pinyin: 'yáng', errors: ['yāng', 'yǎng', 'yàng'] },
+                { char: '虫', pinyin: 'chóng', errors: ['chōng', 'chǒng', 'chòng'] },
+                { char: '云', pinyin: 'yún', errors: ['yūn', 'yǔn', 'yùn'] },
+                { char: '风', pinyin: 'fēng', errors: ['féng', 'fěng', 'fèng'] },
+                { char: '雨', pinyin: 'yǔ', errors: ['yū', 'yú', 'yù'] },
+                { char: '雪', pinyin: 'xuě', errors: ['xuē', 'xué', 'xuè'] },
+                { char: '星', pinyin: 'xīng', errors: ['xíng', 'xǐng', 'xìng'] },
+                { char: '天', pinyin: 'tiān', errors: ['tián', 'tiǎn', 'tiàn'] },
+                { char: '地', pinyin: 'dì', errors: ['dī', 'dí', 'dǐ'] },
+                { char: '春', pinyin: 'chūn', errors: ['chún', 'chǔn', 'chùn'] },
+                { char: '夏', pinyin: 'xià', errors: ['xiā', 'xiá', 'xiǎ'] },
+                { char: '秋', pinyin: 'qiū', errors: ['qiú', 'qiǔ', 'qiù'] },
+                { char: '冬', pinyin: 'dōng', errors: ['dóng', 'dǒng', 'dòng'] },
+                { char: '东', pinyin: 'dōng', errors: ['dóng', 'dǒng', 'dòng'] },
+                { char: '西', pinyin: 'xī', errors: ['xí', 'xǐ', 'xì'] },
+                { char: '南', pinyin: 'nán', errors: ['nān', 'nǎn', 'nàn'] },
+                { char: '北', pinyin: 'běi', errors: ['bēi', 'béi', 'bèi'] },
+                { char: '前', pinyin: 'qián', errors: ['qiān', 'qiǎn', 'qiàn'] },
+                { char: '后', pinyin: 'hòu', errors: ['hōu', 'hóu', 'hǒu'] },
+                { char: '左', pinyin: 'zuǒ', errors: ['zuō', 'zuó', 'zuò'] },
+                { char: '右', pinyin: 'yòu', errors: ['yōu', 'yóu', 'yǒu'] },
+                { char: '里', pinyin: 'lǐ', errors: ['lī', 'lí', 'lì'] },
+                { char: '外', pinyin: 'wài', errors: ['wāi', 'wái', 'wǎi'] },
+                { char: '白', pinyin: 'bái', errors: ['bāi', 'bǎi', 'bài'] },
+                { char: '黑', pinyin: 'hēi', errors: ['héi', 'hěi', 'hèi'] },
+                { char: '红', pinyin: 'hóng', errors: ['hōng', 'hǒng', 'hòng'] },
+                { char: '绿', pinyin: 'lǜ', errors: ['lū', 'lú', 'lǔ'] },
+                { char: '黄', pinyin: 'huáng', errors: ['huāng', 'huǎng', 'huàng'] },
+                { char: '蓝', pinyin: 'lán', errors: ['lān', 'lǎn', 'làn'] },
+                { char: '紫', pinyin: 'zǐ', errors: ['zī', 'zí', 'zì'] },
+                { char: '青', pinyin: 'qīng', errors: ['qíng', 'qǐng', 'qìng'] },
+            ],
+            // ----- 单字 (中等) -----
+            medium: [
+                { char: '长', pinyin: 'cháng', errors: ['chāng', 'chǎng', 'chàng'] },
+                { char: '长', pinyin: 'zhǎng', errors: ['zhāng', 'zháng', 'zhàng'] },
+                { char: '乐', pinyin: 'lè', errors: ['lē', 'lé', 'lě'] },
+                { char: '乐', pinyin: 'yuè', errors: ['yuē', 'yué', 'yuě'] },
+                { char: '重', pinyin: 'zhòng', errors: ['zhōng', 'zhǒng', 'zhòng'] },
+                { char: '重', pinyin: 'chóng', errors: ['chōng', 'chǒng', 'chòng'] },
+                { char: '还', pinyin: 'hái', errors: ['hāi', 'hǎi', 'hài'] },
+                { char: '还', pinyin: 'huán', errors: ['huān', 'huǎn', 'huàn'] },
+                { char: '了', pinyin: 'le', errors: ['lē', 'lè', 'liǎo'] },
+                { char: '了', pinyin: 'liǎo', errors: ['liāo', 'liáo', 'liào'] },
+                { char: '看', pinyin: 'kàn', errors: ['kān', 'kán', 'kǎn'] },
+                { char: '看', pinyin: 'kān', errors: ['kán', 'kǎn', 'kàn'] },
+                { char: '行', pinyin: 'xíng', errors: ['xīng', 'xǐng', 'xìng'] },
+                { char: '行', pinyin: 'háng', errors: ['hāng', 'hǎng', 'hàng'] },
+                { char: '发', pinyin: 'fā', errors: ['fá', 'fǎ', 'fà'] },
+                { char: '发', pinyin: 'fà', errors: ['fā', 'fá', 'fǎ'] },
+                { char: '兴', pinyin: 'xīng', errors: ['xíng', 'xǐng', 'xìng'] },
+                { char: '兴', pinyin: 'xìng', errors: ['xīng', 'xíng', 'xǐng'] },
+                { char: '数', pinyin: 'shù', errors: ['shū', 'shú', 'shǔ'] },
+                { char: '数', pinyin: 'shǔ', errors: ['shū', 'shú', 'shù'] },
+                { char: '觉', pinyin: 'jiào', errors: ['jiāo', 'jiáo', 'jiǎo'] },
+                { char: '觉', pinyin: 'jué', errors: ['juē', 'juě', 'juè'] },
+                { char: '处', pinyin: 'chù', errors: ['chū', 'chú', 'chǔ'] },
+                { char: '处', pinyin: 'chǔ', errors: ['chū', 'chú', 'chù'] },
+                { char: '背', pinyin: 'bèi', errors: ['bēi', 'béi', 'běi'] },
+                { char: '背', pinyin: 'bēi', errors: ['béi', 'běi', 'bèi'] },
+                { char: '间', pinyin: 'jiān', errors: ['jián', 'jiǎn', 'jiàn'] },
+                { char: '间', pinyin: 'jiàn', errors: ['jiān', 'jián', 'jiǎn'] },
+                { char: '空', pinyin: 'kōng', errors: ['kóng', 'kǒng', 'kòng'] },
+                { char: '空', pinyin: 'kòng', errors: ['kōng', 'kóng', 'kǒng'] },
+                { char: '正', pinyin: 'zhèng', errors: ['zhēng', 'zhéng', 'zhěng'] },
+                { char: '正', pinyin: 'zhēng', errors: ['zhéng', 'zhěng', 'zhèng'] },
+                { char: '教', pinyin: 'jiào', errors: ['jiāo', 'jiáo', 'jiǎo'] },
+                { char: '教', pinyin: 'jiāo', errors: ['jiáo', 'jiǎo', 'jiào'] },
+            ],
+            // ----- 单字 (困难) -----
+            hard: [
+                { char: '差', pinyin: 'chā', errors: ['chá', 'chǎ', 'chà'] },
+                { char: '差', pinyin: 'chà', errors: ['chā', 'chá', 'chǎ'] },
+                { char: '差', pinyin: 'chāi', errors: ['chái', 'chǎi', 'chài'] },
+                { char: '降', pinyin: 'jiàng', errors: ['jiāng', 'jiáng', 'jiǎng'] },
+                { char: '降', pinyin: 'xiáng', errors: ['xiāng', 'xiǎng', 'xiàng'] },
+                { char: '率', pinyin: 'lǜ', errors: ['lū', 'lú', 'lǔ'] },
+                { char: '率', pinyin: 'shuài', errors: ['shuāi', 'shuái', 'shuǎi'] },
+                { char: '恶', pinyin: 'è', errors: ['ē', 'é', 'ě'] },
+                { char: '恶', pinyin: 'ě', errors: ['ē', 'é', 'è'] },
+                { char: '恶', pinyin: 'wù', errors: ['wū', 'wú', 'wǔ'] },
+                { char: '当', pinyin: 'dāng', errors: ['dáng', 'dǎng', 'dàng'] },
+                { char: '当', pinyin: 'dàng', errors: ['dāng', 'dáng', 'dǎng'] },
+                { char: '给', pinyin: 'gěi', errors: ['gēi', 'géi', 'gèi'] },
+                { char: '给', pinyin: 'jǐ', errors: ['jī', 'jí', 'jì'] },
+                { char: '供', pinyin: 'gōng', errors: ['góng', 'gǒng', 'gòng'] },
+                { char: '供', pinyin: 'gòng', errors: ['gōng', 'góng', 'gǒng'] },
+                { char: '喝', pinyin: 'hē', errors: ['hé', 'hě', 'hè'] },
+                { char: '喝', pinyin: 'hè', errors: ['hē', 'hé', 'hě'] },
+                { char: '调', pinyin: 'diào', errors: ['diāo', 'diáo', 'diǎo'] },
+                { char: '调', pinyin: 'tiáo', errors: ['tiāo', 'tiǎo', 'tiào'] },
+                { char: '转', pinyin: 'zhuǎn', errors: ['zhuān', 'zhuán', 'zhuàn'] },
+                { char: '转', pinyin: 'zhuàn', errors: ['zhuān', 'zhuán', 'zhuǎn'] },
+                { char: '传', pinyin: 'chuán', errors: ['chuān', 'chuǎn', 'chuàn'] },
+                { char: '传', pinyin: 'zhuàn', errors: ['zhuān', 'zhuán', 'zhuǎn'] },
+                { char: '鲜', pinyin: 'xiān', errors: ['xián', 'xiǎn', 'xiàn'] },
+                { char: '鲜', pinyin: 'xiǎn', errors: ['xiān', 'xián', 'xiàn'] },
+                { char: '朝', pinyin: 'zhāo', errors: ['zháo', 'zhǎo', 'zhào'] },
+                { char: '朝', pinyin: 'cháo', errors: ['chāo', 'chǎo', 'chào'] },
+                { char: '横', pinyin: 'héng', errors: ['hēng', 'hěng', 'hèng'] },
+                { char: '横', pinyin: 'hèng', errors: ['hēng', 'héng', 'hěng'] },
+                { char: '似', pinyin: 'sì', errors: ['sī', 'sí', 'sǐ'] },
+                { char: '似', pinyin: 'shì', errors: ['shī', 'shí', 'shǐ'] },
+            ]
+        };
+
+        // ----- 词组库 (所有难度共用) -----
+        var PINYIN_PHRASES = [
+            { phrase: '妈妈', pinyin: 'mā ma', errors: ['má ma', 'mǎ ma', 'mà ma'] },
+            { phrase: '爸爸', pinyin: 'bà ba', errors: ['bā ba', 'bǎ ba', 'bá ba'] },
+            { phrase: '哥哥', pinyin: 'gē ge', errors: ['gé ge', 'gě ge', 'gè ge'] },
+            { phrase: '姐姐', pinyin: 'jiě jie', errors: ['jiē jie', 'jié jie', 'jiè jie'] },
+            { phrase: '弟弟', pinyin: 'dì di', errors: ['dī di', 'dí di', 'dǐ di'] },
+            { phrase: '妹妹', pinyin: 'mèi mei', errors: ['mēi mei', 'méi mei', 'měi mei'] },
+            { phrase: '春天', pinyin: 'chūn tiān', errors: ['chún tiān', 'chǔn tiān', 'chùn tiān'] },
+            { phrase: '夏天', pinyin: 'xià tiān', errors: ['xiā tiān', 'xiá tiān', 'xiǎ tiān'] },
+            { phrase: '秋天', pinyin: 'qiū tiān', errors: ['qiú tiān', 'qiǔ tiān', 'qiù tiān'] },
+            { phrase: '冬天', pinyin: 'dōng tiān', errors: ['dóng tiān', 'dǒng tiān', 'dòng tiān'] },
+            { phrase: '太阳', pinyin: 'tài yáng', errors: ['tāi yáng', 'tái yáng', 'tǎi yáng'] },
+            { phrase: '月亮', pinyin: 'yuè liang', errors: ['yuē liang', 'yué liang', 'yuě liang'] },
+            { phrase: '星星', pinyin: 'xīng xing', errors: ['xíng xing', 'xǐng xing', 'xìng xing'] },
+            { phrase: '白云', pinyin: 'bái yún', errors: ['bāi yún', 'bǎi yún', 'bài yún'] },
+            { phrase: '蓝天', pinyin: 'lán tiān', errors: ['lān tiān', 'lǎn tiān', 'làn tiān'] },
+            { phrase: '草地', pinyin: 'cǎo dì', errors: ['cāo dì', 'cáo dì', 'cào dì'] },
+            { phrase: '花朵', pinyin: 'huā duǒ', errors: ['huá duǒ', 'huǎ duǒ', 'huà duǒ'] },
+            { phrase: '小鸟', pinyin: 'xiǎo niǎo', errors: ['xiāo niǎo', 'xiáo niǎo', 'xiào niǎo'] },
+            { phrase: '小鱼', pinyin: 'xiǎo yú', errors: ['xiāo yú', 'xiáo yú', 'xiào yú'] },
+            { phrase: '小马', pinyin: 'xiǎo mǎ', errors: ['xiāo mǎ', 'xiáo mǎ', 'xiào mǎ'] },
+            { phrase: '小牛', pinyin: 'xiǎo niú', errors: ['xiāo niú', 'xiáo niú', 'xiào niú'] },
+            { phrase: '小羊', pinyin: 'xiǎo yáng', errors: ['xiāo yáng', 'xiáo yáng', 'xiào yáng'] },
+            { phrase: '小虫', pinyin: 'xiǎo chóng', errors: ['xiāo chóng', 'xiáo chóng', 'xiào chóng'] },
+            { phrase: '开心', pinyin: 'kāi xīn', errors: ['kài xīn', 'kǎi xīn', 'kái xīn'] },
+            { phrase: '快乐', pinyin: 'kuài lè', errors: ['kuāi lè', 'kuái lè', 'kuǎi lè'] },
+            { phrase: '美丽', pinyin: 'měi lì', errors: ['mēi lì', 'méi lì', 'mèi lì'] },
+            { phrase: '漂亮', pinyin: 'piào liang', errors: ['piāo liang', 'piáo liang', 'piǎo liang'] },
+            { phrase: '勇敢', pinyin: 'yǒng gǎn', errors: ['yōng gǎn', 'yóng gǎn', 'yòng gǎn'] },
+            { phrase: '善良', pinyin: 'shàn liáng', errors: ['shān liáng', 'shán liáng', 'shǎn liáng'] },
+            { phrase: '聪明', pinyin: 'cōng míng', errors: ['cóng míng', 'cǒng míng', 'còng míng'] },
+            { phrase: '可爱', pinyin: 'kě ài', errors: ['kē ài', 'ké ài', 'kè ài'] },
+            { phrase: '高兴', pinyin: 'gāo xìng', errors: ['gào xìng', 'gǎo xìng', 'gáo xìng'] },
+            { phrase: '喜欢', pinyin: 'xǐ huān', errors: ['xī huān', 'xí huān', 'xì huān'] },
+            { phrase: '学校', pinyin: 'xué xiào', errors: ['xuē xiào', 'xué xiào', 'xuě xiào'] },
+            { phrase: '老师', pinyin: 'lǎo shī', errors: ['lāo shī', 'láo shī', 'lào shī'] },
+            { phrase: '同学', pinyin: 'tóng xué', errors: ['tōng xué', 'tǒng xué', 'tòng xué'] },
+            { phrase: '朋友', pinyin: 'péng yǒu', errors: ['pēng yǒu', 'pěng yǒu', 'pèng yǒu'] },
+            { phrase: '家人', pinyin: 'jiā rén', errors: ['jiá rén', 'jiǎ rén', 'jià rén'] },
+            { phrase: '祖国', pinyin: 'zǔ guó', errors: ['zū guó', 'zú guó', 'zù guó'] },
+            { phrase: '中国', pinyin: 'zhōng guó', errors: ['zhóng guó', 'zhǒng guó', 'zhòng guó'] },
+            { phrase: '北京', pinyin: 'běi jīng', errors: ['bēi jīng', 'béi jīng', 'bèi jīng'] },
+            { phrase: '上海', pinyin: 'shàng hǎi', errors: ['shāng hǎi', 'sháng hǎi', 'shǎng hǎi'] },
+            { phrase: '广州', pinyin: 'guǎng zhōu', errors: ['guāng zhōu', 'guáng zhōu', 'guàng zhōu'] },
+            { phrase: '深圳', pinyin: 'shēn zhèn', errors: ['shén zhèn', 'shěn zhèn', 'shèn zhèn'] },
+            { phrase: '香港', pinyin: 'xiāng gǎng', errors: ['xiáng gǎng', 'xiǎng gǎng', 'xiàng gǎng'] },
+            { phrase: '澳门', pinyin: 'ào mén', errors: ['āo mén', 'áo mén', 'ǎo mén'] },
+            { phrase: '台湾', pinyin: 'tái wān', errors: ['tāi wān', 'tǎi wān', 'tài wān'] },
+            { phrase: '长城', pinyin: 'cháng chéng', errors: ['chāng chéng', 'chǎng chéng', 'chàng chéng'] },
+            { phrase: '黄河', pinyin: 'huáng hé', errors: ['huāng hé', 'huǎng hé', 'huàng hé'] },
+            { phrase: '长江', pinyin: 'cháng jiāng', errors: ['chāng jiāng', 'chǎng jiāng', 'chàng jiāng'] },
+            { phrase: '西湖', pinyin: 'xī hú', errors: ['xí hú', 'xǐ hú', 'xì hú'] },
+            { phrase: '桂林', pinyin: 'guì lín', errors: ['guī lín', 'guí lín', 'guǐ lín'] },
+            { phrase: '熊猫', pinyin: 'xióng māo', errors: ['xiōng māo', 'xiǒng māo', 'xiòng māo'] },
+            { phrase: '老虎', pinyin: 'lǎo hǔ', errors: ['lāo hǔ', 'láo hǔ', 'lào hǔ'] },
+            { phrase: '狮子', pinyin: 'shī zi', errors: ['shí zi', 'shǐ zi', 'shì zi'] },
+            { phrase: '大象', pinyin: 'dà xiàng', errors: ['dā xiàng', 'dá xiàng', 'dǎ xiàng'] },
+            { phrase: '长颈鹿', pinyin: 'cháng jǐng lù', errors: ['chāng jǐng lù', 'chǎng jǐng lù', 'chàng jǐng lù'] },
+            { phrase: '企鹅', pinyin: 'qǐ é', errors: ['qī é', 'qí é', 'qì é'] },
+            { phrase: '海豚', pinyin: 'hǎi tún', errors: ['hāi tún', 'hái tún', 'hài tún'] },
+            { phrase: '鲸鱼', pinyin: 'jīng yú', errors: ['jíng yú', 'jǐng yú', 'jìng yú'] },
+            { phrase: '苹果', pinyin: 'píng guǒ', errors: ['pīng guǒ', 'pǐng guǒ', 'pìng guǒ'] },
+            { phrase: '香蕉', pinyin: 'xiāng jiāo', errors: ['xiáng jiāo', 'xiǎng jiāo', 'xiàng jiāo'] },
+            { phrase: '西瓜', pinyin: 'xī guā', errors: ['xí guā', 'xǐ guā', 'xì guā'] },
+            { phrase: '草莓', pinyin: 'cǎo méi', errors: ['cāo méi', 'cáo méi', 'cào méi'] },
+            { phrase: '葡萄', pinyin: 'pú táo', errors: ['pū táo', 'pǔ táo', 'pù táo'] },
+            { phrase: '芒果', pinyin: 'máng guǒ', errors: ['māng guǒ', 'mǎng guǒ', 'màng guǒ'] },
+            { phrase: '菠萝', pinyin: 'bō luó', errors: ['bó luó', 'bǒ luó', 'bò luó'] },
+            { phrase: '桃子', pinyin: 'táo zi', errors: ['tāo zi', 'tǎo zi', 'tào zi'] },
+            { phrase: '李子', pinyin: 'lǐ zi', errors: ['lī zi', 'lí zi', 'lì zi'] },
+            { phrase: '草莓', pinyin: 'cǎo méi', errors: ['cāo méi', 'cáo méi', 'cào méi'] },
+            { phrase: '樱桃', pinyin: 'yīng táo', errors: ['yíng táo', 'yǐng táo', 'yìng táo'] },
+            { phrase: '米饭', pinyin: 'mǐ fàn', errors: ['mī fàn', 'mí fàn', 'mǐ fàn'] },
+            { phrase: '面条', pinyin: 'miàn tiáo', errors: ['miān tiáo', 'mián tiáo', 'miǎn tiáo'] },
+            { phrase: '饺子', pinyin: 'jiǎo zi', errors: ['jiāo zi', 'jiáo zi', 'jiào zi'] },
+            { phrase: '包子', pinyin: 'bāo zi', errors: ['báo zi', 'bǎo zi', 'bào zi'] },
+            { phrase: '馒头', pinyin: 'mán tou', errors: ['mān tou', 'mǎn tou', 'màn tou'] },
+            { phrase: '面条', pinyin: 'miàn tiáo', errors: ['miān tiáo', 'mián tiáo', 'miǎn tiáo'] },
+            { phrase: '米饭', pinyin: 'mǐ fàn', errors: ['mī fàn', 'mí fàn', 'mǐ fàn'] },
+            { phrase: '牛奶', pinyin: 'niú nǎi', errors: ['niū nǎi', 'niǔ nǎi', 'niù nǎi'] },
+            { phrase: '面包', pinyin: 'miàn bāo', errors: ['miān bāo', 'mián bāo', 'miǎn bāo'] },
+            { phrase: '蛋糕', pinyin: 'dàn gāo', errors: ['dān gāo', 'dán gāo', 'dǎn gāo'] },
+            { phrase: '糖果', pinyin: 'táng guǒ', errors: ['tāng guǒ', 'tǎng guǒ', 'tàng guǒ'] },
+            { phrase: '巧克力', pinyin: 'qiǎo kè lì', errors: ['qiāo kè lì', 'qiáo kè lì', 'qiào kè lì'] },
+            { phrase: '冰淇淋', pinyin: 'bīng qí lín', errors: ['bíng qí lín', 'bǐng qí lín', 'bìng qí lín'] },
+            { phrase: '朋友', pinyin: 'péng yǒu', errors: ['pēng yǒu', 'pěng yǒu', 'pèng yǒu'] },
+            { phrase: '家人', pinyin: 'jiā rén', errors: ['jiá rén', 'jiǎ rén', 'jià rén'] },
+        ];
+
+        // ----- 生成选项 -----
+        function generateOptions(correct, errors) {
+            var opts = [correct];
+            for (var i = 0; i < errors.length; i++) {
+                if (opts.length >= 4) break;
+                if (opts.indexOf(errors[i]) === -1) opts.push(errors[i]);
+            }
+            // 补充通用干扰
+            var fallback = ['bā', 'mā', 'dà', 'xiǎo', 'shàng', 'rén', 'kǒu', 'shǒu', 'shān', 'shuǐ', 'huǒ', 'tiān', 'dì',
+                'chūn', 'xià', 'qiū', 'dōng'
+            ];
+            for (var i = 0; i < fallback.length; i++) {
+                if (opts.length >= 4) break;
+                if (opts.indexOf(fallback[i]) === -1) opts.push(fallback[i]);
+            }
+            while (opts.length < 4) { opts.push('pīn'); }
+            return shuffle(opts);
+        }
+
+        function generatePhraseOptions(correct, errors) {
+            var opts = [correct];
+            for (var i = 0; i < errors.length; i++) {
+                if (opts.length >= 4) break;
+                if (opts.indexOf(errors[i]) === -1) opts.push(errors[i]);
+            }
+            var fallback = ['mā ma', 'bà ba', 'gē ge', 'jiě jie', 'dì di', 'mèi mei', 'chūn tiān', 'xià tiān',
+                'qiū tiān', 'dōng tiān', 'tài yáng', 'yuè liang', 'xīng xing'
+            ];
+            for (var i = 0; i < fallback.length; i++) {
+                if (opts.length >= 4) break;
+                if (opts.indexOf(fallback[i]) === -1) opts.push(fallback[i]);
+            }
+            while (opts.length < 4) { opts.push('pīn yīn'); }
+            return shuffle(opts);
+        }
+
+        // ----- 生成题库（单字 + 词组混合）-----
+        function generateQuestions(difficulty) {
+            var chars = PINYIN_CHARS[difficulty] || PINYIN_CHARS.easy;
+            var qs = [];
+
+            // 1. 单字题
+            for (var i = 0; i < chars.length; i++) {
+                var item = chars[i];
+                var opts = generateOptions(item.pinyin, item.errors);
+                qs.push({
+                    question: '"' + item.char + '" 的拼音是？',
+                    answer: item.pinyin,
+                    options: opts,
+                    type: '单字'
+                });
+                // 反向题（拼音选字）
+                if (Math.random() > 0.5) {
+                    var charOpts = [item.char];
+                    var others = [];
+                    for (var j = 0; j < chars.length; j++) {
+                        if (chars[j].char !== item.char) others.push(chars[j].char);
+                    }
+                    for (var j = 0; j < 3 && j < others.length; j++) {
+                        charOpts.push(others[j]);
+                    }
+                    while (charOpts.length < 4) { charOpts.push('字'); }
+                    shuffle(charOpts);
+                    qs.push({
+                        question: '"' + item.pinyin + '" 对应哪个字？',
+                        answer: item.char,
+                        options: charOpts.slice(0, 4),
+                        type: '单字'
+                    });
+                }
+            }
+
+            // 2. 词组题（随机抽取部分词组，保证数量）
+            var phrasePool = shuffle(PINYIN_PHRASES.slice(0));
+            var phraseCount = Math.min(phrasePool.length, Math.floor(chars.length * 0.8));
+            for (var i = 0; i < phraseCount; i++) {
+                var item = phrasePool[i];
+                var opts = generatePhraseOptions(item.pinyin, item.errors);
+                qs.push({
+                    question: '"' + item.phrase + '" 的拼音是？',
+                    answer: item.pinyin,
+                    options: opts,
+                    type: '词组'
+                });
+                // 反向题（拼音选词组）
+                if (Math.random() > 0.4) {
+                    var phraseOpts = [item.phrase];
+                    var others = [];
+                    for (var j = 0; j < phrasePool.length; j++) {
+                        if (phrasePool[j].phrase !== item.phrase) others.push(phrasePool[j].phrase);
+                    }
+                    for (var j = 0; j < 3 && j < others.length; j++) {
+                        phraseOpts.push(others[j]);
+                    }
+                    while (phraseOpts.length < 4) { phraseOpts.push('词语'); }
+                    shuffle(phraseOpts);
+                    qs.push({
+                        question: '"' + item.pinyin + '" 对应哪个词组？',
+                        answer: item.phrase,
+                        options: phraseOpts.slice(0, 4),
+                        type: '词组'
+                    });
+                }
+            }
+
+            return shuffle(qs);
+        }
+
+        // ----- 生成三个难度题库（每个难度80-100题）-----
+        var PINYIN_QUESTIONS = {
+            easy: generateQuestions('easy'),
+            medium: generateQuestions('medium'),
+            hard: generateQuestions('hard')
+        };
+
+        console.log('🔤 拼音题库加载完成:');
+        console.log('  简单:', PINYIN_QUESTIONS.easy.length, '题 (含词组)');
+        console.log('  中等:', PINYIN_QUESTIONS.medium.length, '题 (含词组)');
+        console.log('  困难:', PINYIN_QUESTIONS.hard.length, '题 (含词组)');
+
+        // ============================================================
+        // 游戏逻辑
+        // ============================================================
+        var DIFFICULTIES = {
+            easy: { label: '⭐ 简单', grade: '1-2年级', desc: '单字+常用词组', icon: '🌟' },
+            medium: { label: '⭐⭐ 中等', grade: '3-4年级', desc: '多音字+词组', icon: '⚡' },
+            hard: { label: '⭐⭐⭐ 困难', grade: '5-6年级', desc: '复杂多音+词组', icon: '🔥' }
+        };
+
+        var currentDifficulty = 'easy';
+        var mode = 'single';
+        var gameRunning = false;
+
+        var singleIndex = 0,
+            singleStreak = 0,
+            singleBest = 0;
+        var singleQuestions = [];
+        var singleAnswered = false;
+
+        var DOUBLE_TOTAL = 20;
+        var doubleQuestions = [];
+        var doubleIndex = 0;
+        var p1Score = 0,
+            p2Score = 0;
+        var p1Answered = false,
+            p2Answered = false;
+        var p1Correct = false,
+            p2Correct = false;
+        var p1Locked = false,
+            p2Locked = false;
+        var currentQ1 = null,
+            currentQ2 = null;
+
+        function getQuestions(diff, count) {
+            var bank = PINYIN_QUESTIONS[diff] || PINYIN_QUESTIONS.easy;
+            var shuffled = shuffle(bank.slice(0));
+            return shuffled.slice(0, count || Math.min(shuffled.length, 100));
+        }
+
+        function refillSingle() {
+            var newQs = getQuestions(currentDifficulty, 30);
+            singleQuestions = singleQuestions.concat(newQs);
+        }
+
+        // ----- 渲染 -----
+        function render() {
+            if (!gameRunning) {
+                renderStartScreen();
+                return;
+            }
+            if (mode === 'single') renderSingle();
+            else renderDouble();
+        }
+
+        function renderStartScreen() {
+            var key = 'pinyin_' + currentDifficulty;
+            $best.textContent = getBestScore(key);
+            $streak.textContent = '0';
+
+            var diffHtml = '';
+            var keys = Object.keys(DIFFICULTIES);
+            for (var i = 0; i < keys.length; i++) {
+                var k = keys[i];
+                var d = DIFFICULTIES[k];
+                var selected = k === currentDifficulty ? 'selected' : '';
+                diffHtml += '<div class="diff-card ' + selected + '" data-diff="' + k + '">';
+                diffHtml += '<div class="d-icon">' + d.icon + '</div>';
+                diffHtml += '<div class="d-name">' + d.label + '</div>';
+                diffHtml += '<div class="d-grade">' + d.grade + '</div>';
+                diffHtml += '<div class="d-desc">' + d.desc + '</div>';
+                diffHtml += '</div>';
+            }
+
+            $content.innerHTML =
+                '<div class="start-screen">' +
+                '<div class="icon">🔤</div>' +
+                '<h2>拼音对决</h2>' +
+                '<p class="desc">选择难度，开始挑战！<span style="font-size:0.8rem;display:block;color:var(--text-light);margin-top:4px;">📚 包含单字 + 词组</span></p>' +
+                '<div class="diff-grid">' + diffHtml + '</div>' +
+                '<div class="btn-group">' +
+                '<button class="btn-primary" onclick="startGame(\'single\')">🧑 单人闯关</button>' +
+                '<button class="btn-primary" onclick="startGame(\'double\')" style="background:#6a9fc8;">👫 双人对战</button>' +
+                '</div>' +
+                '<div style="margin-top:12px;font-size:0.8rem;color:var(--text-secondary);">' +
+                (mode === 'single' ? '单人：无限闯关，错一题淘汰' : '双人：共20题，各自独立答题') +
+                '</div>' +
+                '</div>';
+
+            var cards = document.querySelectorAll('.diff-card');
+            for (var i = 0; i < cards.length; i++) {
+                (function(card) {
+                    card.addEventListener('click', function() {
+                        var diff = this.dataset.diff;
+                        if (diff === currentDifficulty) return;
+                        currentDifficulty = diff;
+                        var allCards = document.querySelectorAll('.diff-card');
+                        for (var j = 0; j < allCards.length; j++) {
+                            allCards[j].classList.remove('selected');
+                        }
+                        this.classList.add('selected');
+                        if (gameRunning) {
+                            gameRunning = false;
+                            resetGame();
+                        }
+                        var key = 'pinyin_' + currentDifficulty;
+                        $best.textContent = getBestScore(key);
+                    });
+                })(cards[i]);
+            }
+        }
+
+        function renderSingle() {
+            while (singleIndex >= singleQuestions.length) {
+                refillSingle();
+            }
+            if (singleQuestions.length === 0) {
+                singleQuestions = getQuestions(currentDifficulty, 30);
+            }
+            var q = singleQuestions[singleIndex % singleQuestions.length];
+            currentQ1 = q;
+
+            var key = 'pinyin_' + currentDifficulty;
+            $best.textContent = singleBest;
+            $streak.textContent = singleStreak;
+
+            var optHtml = '';
+            for (var i = 0; i < q.options.length; i++) {
+                var opt = q.options[i];
+                var disabled = singleAnswered ? 'disabled' : '';
+                optHtml += '<button class="opt" data-value="' + opt + '" ' + disabled + '>' + opt + '</button>';
+            }
+
+            var typeTag = q.type === '词组' ? '📚 词组' : '🔤 单字';
+
+            $content.innerHTML =
+                '<div class="single-area">' +
+                '<div class="progress">' + typeTag + ' · 第 ' + (singleIndex + 1) + ' 题</div>' +
+                '<div class="q-big">' + q.question + '</div>' +
+                '<div class="opts-grid">' + optHtml + '</div>' +
+                '<div style="text-align:center;margin-top:10px;font-size:0.85rem;color:var(--text-secondary);">' +
+                '✅ 连对: <strong style="color:var(--accent);font-size:1.2rem;">' + singleStreak + '</strong> 题' +
+                '</div>' +
+                '</div>';
+
+            if (!singleAnswered) {
+                var btns = document.querySelectorAll('.opt');
+                for (var i = 0; i < btns.length; i++) {
+                    (function(btn) {
+                        btn.addEventListener('click', function() {
+                            handleSingleAnswer(this.dataset.value);
+                        });
+                    })(btns[i]);
+                }
+            }
+        }
+
+        function handleSingleAnswer(value) {
+            if (singleAnswered || !gameRunning) return;
+            var q = currentQ1;
+            var correct = String(value) === String(q.answer);
+            singleAnswered = true;
+
+            var btns = document.querySelectorAll('.opt');
+            for (var i = 0; i < btns.length; i++) {
+                var btn = btns[i];
+                btn.classList.add('disabled');
+                var val = btn.dataset.value;
+                if (String(val) === String(q.answer)) btn.classList.add('correct');
+                if (String(val) === String(value) && !correct) btn.classList.add('wrong');
+            }
+
+            if (correct) {
+                singleStreak++;
+                var key = 'pinyin_' + currentDifficulty;
+                if (singleStreak > singleBest) {
+                    singleBest = singleStreak;
+                    saveRank(key, singleBest);
+                    $best.textContent = singleBest;
+                }
+                $streak.textContent = singleStreak;
+                setTimeout(function() {
+                    singleIndex++;
+                    singleAnswered = false;
+                    render();
+                }, 600);
+            } else {
+                showResult(singleStreak);
+            }
+        }
+
+        // ----- 双人 -----
+        function renderDouble() {
+            if (doubleQuestions.length === 0) {
+                var pool = getQuestions(currentDifficulty, 50);
+                doubleQuestions = shuffle(pool).slice(0, DOUBLE_TOTAL);
+                if (doubleQuestions.length === 0) {
+                    doubleQuestions = shuffle(PINYIN_QUESTIONS.easy.slice(0)).slice(0, DOUBLE_TOTAL);
+                }
+                doubleIndex = 0;
+                p1Score = 0;
+                p2Score = 0;
+                p1Answered = false;
+                p2Answered = false;
+                p1Locked = false;
+                p2Locked = false;
+            }
+
+            if (doubleIndex >= DOUBLE_TOTAL) {
+                showDoubleResult();
+                return;
+            }
+
+            var q1 = doubleQuestions[doubleIndex % doubleQuestions.length];
+            var q2 = doubleQuestions[doubleIndex % doubleQuestions.length];
+            currentQ1 = q1;
+            currentQ2 = q2;
+
+            var p1Display = p1Locked ? '🎉 等待下一题...' : (p1Answered ? (p1Correct ? '✅ 答对了！' : '❌ 再试一次') :
+                '👆 点击选择');
+            var p2Display = p2Locked ? '🎉 等待下一题...' : (p2Answered ? (p2Correct ? '✅ 答对了！' : '❌ 再试一次') :
+                '👆 点击选择');
+            var p1Cls = p1Locked ? 'ok' : (p1Answered ? (p1Correct ? 'ok' : 'fail') : '');
+            var p2Cls = p2Locked ? 'ok' : (p2Answered ? (p2Correct ? 'ok' : 'fail') : '');
+
+            var opts1 = '';
+            for (var i = 0; i < q1.options.length; i++) {
+                var opt = q1.options[i];
+                var disabled = (p1Locked || p1Answered) ? 'disabled' : '';
+                opts1 += '<button class="duel-opt" data-value="' + opt + '" ' + disabled + '>' + opt + '</button>';
+            }
+
+            var opts2 = '';
+            for (var i = 0; i < q2.options.length; i++) {
+                var opt = q2.options[i];
+                var disabled = (p2Locked || p2Answered) ? 'disabled' : '';
+                opts2 += '<button class="duel-opt" data-value="' + opt + '" ' + disabled + '>' + opt + '</button>';
+            }
+
+            $content.innerHTML =
+                '<div class="duel-container">' +
+                '<div class="duel-player top">' +
+                '<div class="duel-inner">' +
+                '<div class="duel-row"><span class="pname p2">🧑 玩家 2</span><span class="pscore">' + p2Score +
+                ' 分</span></div>' +
+                '<div class="duel-q">' + q2.question + '</div>' +
+                '<div class="duel-opts">' + opts2 + '</div>' +
+                '<div class="duel-status ' + p2Cls + '">' + p2Display + '</div>' +
+                '</div></div>' +
+                '<div class="duel-middle">' +
+                '<span class="mid-left"><span class="num">' + p1Score + '</span></span>' +
+                '<span class="vs">⚔️</span>' +
+                '<span class="mid-right"><span class="num">' + p2Score + '</span></span>' +
+                '<span class="prog">' + (doubleIndex + 1) + '/' + DOUBLE_TOTAL + '</span>' +
+                '</div>' +
+                '<div class="duel-player bottom">' +
+                '<div class="duel-inner">' +
+                '<div class="duel-row"><span class="pname p1">🧑 玩家 1</span><span class="pscore">' + p1Score +
+                ' 分</span></div>' +
+                '<div class="duel-q">' + q1.question + '</div>' +
+                '<div class="duel-opts">' + opts1 + '</div>' +
+                '<div class="duel-status ' + p1Cls + '">' + p1Display + '</div>' +
+                '</div></div>' +
+                '</div>';
+
+            if (!p1Locked && !p1Answered) {
+                var btns1 = document.querySelectorAll('.duel-player.bottom .duel-opt');
+                for (var i = 0; i < btns1.length; i++) {
+                    (function(btn) {
+                        btn.addEventListener('click', function() {
+                            handleDoubleAnswer(1, this.dataset.value);
+                        });
+                    })(btns1[i]);
+                }
+            }
+
+            if (!p2Locked && !p2Answered) {
+                var btns2 = document.querySelectorAll('.duel-player.top .duel-opt');
+                for (var i = 0; i < btns2.length; i++) {
+                    (function(btn) {
+                        btn.addEventListener('click', function() {
+                            handleDoubleAnswer(2, this.dataset.value);
+                        });
+                    })(btns2[i]);
+                }
+            }
+
+            var key = 'pinyin_' + currentDifficulty;
+            $best.textContent = getBestScore(key);
+            $streak.textContent = p1Score + ' vs ' + p2Score;
+        }
+
+        function handleDoubleAnswer(player, value) {
+            if (!gameRunning) return;
+
+            if (player === 1) {
+                if (p1Locked || p1Answered) return;
+                var q = currentQ1;
+                var correct = String(value) === String(q.answer);
+                p1Answered = true;
+                p1Correct = correct;
+
+                var btns = document.querySelectorAll('.duel-player.bottom .duel-opt');
+                for (var i = 0; i < btns.length; i++) {
+                    var btn = btns[i];
+                    btn.classList.add('disabled');
+                    var val = btn.dataset.value;
+                    if (String(val) === String(q.answer)) btn.classList.add('correct');
+                    if (String(val) === String(value) && !correct) btn.classList.add('wrong');
+                }
+
+                if (correct) {
+                    p1Score++;
+                    p1Locked = true;
+                    updateDoubleUI();
+                    setTimeout(function() {
+                        doubleIndex++;
+                        p1Answered = false;
+                        p2Answered = false;
+                        p1Locked = false;
+                        p2Locked = false;
+                        p1Correct = false;
+                        p2Correct = false;
+                        render();
+                    }, 600);
+                } else {
+                    setTimeout(function() {
+                        p1Answered = false;
+                        p1Correct = false;
+                        render();
+                    }, 400);
+                }
+            } else {
+                if (p2Locked || p2Answered) return;
+                var q = currentQ2;
+                var correct = String(value) === String(q.answer);
+                p2Answered = true;
+                p2Correct = correct;
+
+                var btns = document.querySelectorAll('.duel-player.top .duel-opt');
+                for (var i = 0; i < btns.length; i++) {
+                    var btn = btns[i];
+                    btn.classList.add('disabled');
+                    var val = btn.dataset.value;
+                    if (String(val) === String(q.answer)) btn.classList.add('correct');
+                    if (String(val) === String(value) && !correct) btn.classList.add('wrong');
+                }
+
+                if (correct) {
+                    p2Score++;
+                    p2Locked = true;
+                    updateDoubleUI();
+                    setTimeout(function() {
+                        doubleIndex++;
+                        p1Answered = false;
+                        p2Answered = false;
+                        p1Locked = false;
+                        p2Locked = false;
+                        p1Correct = false;
+                        p2Correct = false;
+                        render();
+                    }, 600);
+                } else {
+                    setTimeout(function() {
+                        p2Answered = false;
+                        p2Correct = false;
+                        render();
+                    }, 400);
+                }
+            }
+
+            updateDoubleUI();
+            $streak.textContent = p1Score + ' vs ' + p2Score;
+        }
+
+        function updateDoubleUI() {
+            var l = document.querySelector('.duel-middle .mid-left .num');
+            var r = document.querySelector('.duel-middle .mid-right .num');
+            if (l) l.textContent = p1Score;
+            if (r) r.textContent = p2Score;
+            var s1 = document.querySelector('.duel-player.bottom .pscore');
+            var s2 = document.querySelector('.duel-player.top .pscore');
+            if (s1) s1.textContent = p1Score + ' 分';
+            if (s2) s2.textContent = p2Score + ' 分';
+            var prog = document.querySelector('.duel-middle .prog');
+            if (prog) prog.textContent = (doubleIndex + 1) + '/' + DOUBLE_TOTAL;
+            $streak.textContent = p1Score + ' vs ' + p2Score;
+        }
+
+        // ----- 结果 -----
+        function showResult(score) {
+            gameRunning = false;
+            var key = 'pinyin_' + currentDifficulty;
+            var rankList = getRankList(key, 5);
+
+            var icon, title, detail;
+            if (score >= 20) { icon = '🏆';
+                title = '太厉害了！';
+                detail = '你是拼音小达人！'; } else if (score >= 10) { icon = '🌟';
+                title = '表现优秀！'; } else if (score >= 5) { icon = '💪';
+                title = '再接再厉！'; } else if (score >= 3) { icon = '📖';
+                title = '继续加油！'; } else { icon = '🌱';
+                title = '开始你的拼音之旅！'; }
+
+            var rankHtml = rankList.length > 0 ? '' :
+            '<div style="text-align:center;color:var(--text-secondary);padding:8px 0;">暂无记录</div>';
+            for (var i = 0; i < rankList.length; i++) {
+                rankHtml += '<div class="rank-item"><span>#' + (i + 1) + '</span><span>' + rankList[i].score +
+                    ' 连对</span></div>';
+            }
+
+            $modalContent.innerHTML =
+                '<div class="m-icon">' + icon + '</div>' +
+                '<h2>' + title + '</h2>' +
+                '<div class="m-score">' + score + '</div>' +
+                '<div class="m-detail">' + detail + ' (' + DIFFICULTIES[currentDifficulty].label + ')</div>' +
+                '<div class="m-rank"><div style="font-weight:700;margin-bottom:6px;">🏅 积分榜 (最高连对)</div>' +
+                rankHtml + '</div>' +
+                '<div class="m-actions">' +
+                '<button class="btn-primary" onclick="closeResult(); startGame(\'single\');">🔄 再来一局</button>' +
+                '<button class="btn-secondary" onclick="closeResult(); resetGame();">🏠 返回</button>' +
+                '</div>';
+            $modal.classList.add('active');
+        }
+
+        function showDoubleResult() {
+            gameRunning = false;
+            var winner = p1Score > p2Score ? '🏆 玩家1 获胜！' :
+                (p2Score > p1Score ? '🏆 玩家2 获胜！' : '🤝 平局！');
+
+            $modalContent.innerHTML =
+                '<div class="m-icon">' + (p1Score > p2Score ? '🎉' : (p2Score > p1Score ? '🎉' : '🤝')) + '</div>' +
+                '<h2>' + winner + '</h2>' +
+                '<div style="display:flex;justify-content:center;gap:30px;margin:12px 0;">' +
+                '<div><span style="color:#e8a035;">🧑 玩家1</span> <strong style="font-size:2rem;">' + p1Score +
+                '</strong></div>' +
+                '<div style="font-size:1.5rem;color:var(--accent);">⚔️</div>' +
+                '<div><span style="color:#5b9bd5;">🧑 玩家2</span> <strong style="font-size:2rem;">' + p2Score +
+                '</strong></div>' +
+                '</div>' +
+                '<div class="m-detail">' + DIFFICULTIES[currentDifficulty].label + ' · 共 ' + DOUBLE_TOTAL +
+                ' 题</div>' +
+                '<div class="m-actions">' +
+                '<button class="btn-primary" onclick="closeResult(); startGame(\'double\');">🔄 再来一局</button>' +
+                '<button class="btn-secondary" onclick="closeResult(); resetGame();">🏠 返回</button>' +
+                '</div>';
+            $modal.classList.add('active');
+        }
+
+        function closeResult() { $modal.classList.remove('active'); }
+
+        // ----- 控制 -----
+        function startGame(m) {
+            mode = m;
+            gameRunning = true;
+            singleAnswered = false;
+            p1Answered = false;
+            p2Answered = false;
+            p1Locked = false;
+            p2Locked = false;
+
+            var btns = document.querySelectorAll('#modeToggle button');
+            for (var i = 0; i < btns.length; i++) {
+                btns[i].classList.toggle('active', btns[i].dataset.mode === m);
+            }
+
+            if (m === 'single') {
+                singleIndex = 0;
+                singleStreak = 0;
+                var key = 'pinyin_' + currentDifficulty;
+                singleBest = getBestScore(key);
+                singleQuestions = [];
+                refillSingle();
+                if (singleQuestions.length === 0) {
+                    singleQuestions = getQuestions(currentDifficulty, 30);
+                }
+                $best.textContent = singleBest;
+                $streak.textContent = '0';
+            } else {
+                doubleIndex = 0;
+                p1Score = 0;
+                p2Score = 0;
+                p1Answered = false;
+                p2Answered = false;
+                p1Locked = false;
+                p2Locked = false;
+                var pool = getQuestions(currentDifficulty, 50);
+                doubleQuestions = shuffle(pool).slice(0, DOUBLE_TOTAL);
+                if (doubleQuestions.length === 0) {
+                    doubleQuestions = shuffle(PINYIN_QUESTIONS.easy.slice(0)).slice(0, DOUBLE_TOTAL);
+                }
+                var key = 'pinyin_' + currentDifficulty;
+                $best.textContent = getBestScore(key);
+                $streak.textContent = '0 vs 0';
+            }
+            render();
+        }
+
+        function resetGame() {
+            gameRunning = false;
+            singleAnswered = false;
+            p1Answered = false;
+            p2Answered = false;
+            p1Locked = false;
+            p2Locked = false;
+            singleIndex = 0;
+            singleStreak = 0;
+            p1Score = 0;
+            p2Score = 0;
+            doubleIndex = 0;
+            $streak.textContent = '0';
+            renderStartScreen();
+        }
+
+        // ----- 事件绑定 -----
+        var modeBtns = document.querySelectorAll('#modeToggle button');
+        for (var i = 0; i < modeBtns.length; i++) {
+            (function(btn) {
+                btn.addEventListener('click', function() {
+                    var m = this.dataset.mode;
+                    if (m === mode && gameRunning) return;
+                    gameRunning = false;
+                    resetGame();
+                    mode = m;
+                    var allBtns = document.querySelectorAll('#modeToggle button');
+                    for (var j = 0; j < allBtns.length; j++) {
+                        allBtns[j].classList.toggle('active', allBtns[j].dataset.mode === m);
+                    }
+                    renderStartScreen();
+                    setTimeout(function() { startGame(m); }, 300);
+                });
+            })(modeBtns[i]);
+        }
+
+        $resetBtn.addEventListener('click', function() {
+            if (confirm('确定重新开始吗？')) { resetGame();
+                renderStartScreen(); }
+        });
+
+        var resizeTimer;
+        window.addEventListener('resize', function() {
+            if (gameRunning && mode === 'double') {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(function() { render(); }, 300);
+            }
+        });
+
+        $modal.addEventListener('click', function(e) {
+            if (e.target === this) closeResult();
+        });
+
+        // ============================================================
+        // 启动
+        // ============================================================
+        console.log('🔤 拼音对决已加载');
+        console.log('✅ 题库: 简单=' + PINYIN_QUESTIONS.easy.length +
+            ' 中等=' + PINYIN_QUESTIONS.medium.length +
+            ' 困难=' + PINYIN_QUESTIONS.hard.length);
+
+        renderStartScreen();
+        var key = 'pinyin_' + currentDifficulty;
+        $best.textContent = getBestScore(key);
+    </script>
+</body>
+</html>

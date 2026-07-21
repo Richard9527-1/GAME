@@ -1,0 +1,1502 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>24点 - GAME</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #d5e0ec;
+            --bg-card: #ffffff;
+            --text-primary: #2a3a4a;
+            --text-secondary: #6a7e92;
+            --text-light: #9aaeC2;
+            --accent: #e8a035;
+            --border-color: #bcc8d6;
+            --shadow: 0 4px 20px rgba(42, 58, 74, 0.12);
+            --shadow-hover: 0 8px 36px rgba(42, 58, 74, 0.20);
+            --radius: 20px;
+            --radius-sm: 12px;
+            --success: #7bcb7a;
+            --success-bg: #eaf5ea;
+            --error: #e86b6b;
+            --error-bg: #f5eaea;
+            --font: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #080c18;
+            --bg-card: #141c30;
+            --text-primary: #e8edf5;
+            --text-secondary: #8899b8;
+            --text-light: #556688;
+            --accent: #00c8e8;
+            --border-color: #1e2a44;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+            --shadow-hover: 0 8px 40px rgba(0, 200, 232, 0.10);
+            --success: #00d4a0;
+            --success-bg: #0a2a22;
+            --error: #ff6b8a;
+            --error-bg: #2a0a18;
+        }
+
+        body {
+            font-family: var(--font);
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            padding: 12px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            transition: background 0.3s, color 0.3s;
+        }
+
+        .container {
+            max-width: 820px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            padding: 12px 16px;
+            background: var(--bg-card);
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            margin-bottom: 16px;
+            transition: background 0.3s, border 0.3s;
+        }
+
+        .game-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .stats {
+            display: flex;
+            gap: 14px;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .stats .num {
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .content {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 20px 16px;
+            border: 1px solid var(--border-color);
+            box-shadow: var(--shadow);
+            min-height: 320px;
+            transition: background 0.3s, border 0.3s;
+        }
+
+        .bottom-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 14px;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .btn-back {
+            padding: 8px 18px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 30px;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            font-family: inherit;
+            text-decoration: none;
+            display: inline-block;
+            transition: background 0.3s, border 0.3s, color 0.3s;
+        }
+        .btn-back:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .btn-secondary {
+            padding: 8px 18px;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: 30px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.8rem;
+            cursor: pointer;
+            font-family: inherit;
+            transition: background 0.3s, border 0.3s, color 0.3s;
+        }
+        .btn-secondary:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .btn-primary {
+            padding: 10px 28px;
+            background: var(--accent);
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 0.95rem;
+            cursor: pointer;
+            font-family: inherit;
+            box-shadow: 0 4px 14px rgba(232, 160, 53, 0.2);
+            transition: background 0.3s;
+        }
+        [data-theme="dark"] .btn-primary {
+            color: #080c18;
+        }
+        .btn-primary:active {
+            transform: scale(0.96);
+        }
+
+        .start-screen {
+            text-align: center;
+            padding: 20px 10px;
+        }
+        .start-screen .icon {
+            font-size: 4rem;
+            margin-bottom: 10px;
+        }
+        .start-screen h2 {
+            font-size: 1.6rem;
+            margin-bottom: 4px;
+            color: var(--text-primary);
+        }
+        .start-screen .desc {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .diff-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            max-width: 480px;
+            margin: 0 auto 16px;
+        }
+        .diff-card {
+            padding: 14px 10px;
+            background: var(--bg-primary);
+            border: 3px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .diff-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+        }
+        .diff-card .d-icon {
+            font-size: 1.8rem;
+        }
+        .diff-card .d-name {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: var(--text-primary);
+        }
+        .diff-card .d-grade {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+        .diff-card .d-desc {
+            font-size: 0.65rem;
+            color: var(--text-light);
+        }
+        .diff-card.selected {
+            border-color: var(--accent);
+            background: var(--accent-light);
+        }
+        [data-theme="dark"] .diff-card.selected {
+            background: rgba(0, 200, 232, 0.15);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 6px;
+        }
+
+        /* 手动输入区域 */
+        .custom-input-area {
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+            padding: 14px 16px;
+            margin: 12px auto 16px;
+            max-width: 480px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+        .custom-input-area .input-row {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .custom-input-area .input-row input {
+            width: 56px;
+            padding: 8px 4px;
+            text-align: center;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-family: var(--font);
+            outline: none;
+            transition: border 0.3s;
+        }
+        .custom-input-area .input-row input:focus {
+            border-color: var(--accent);
+        }
+        [data-theme="dark"] .custom-input-area .input-row input {
+            background: #1a2240;
+            border-color: #2a3a5a;
+        }
+        .custom-input-area .input-row .btn-solve {
+            padding: 8px 20px;
+            background: var(--accent);
+            border: none;
+            border-radius: var(--radius-sm);
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            font-family: var(--font);
+            transition: all 0.2s;
+        }
+        [data-theme="dark"] .custom-input-area .input-row .btn-solve {
+            color: #080c18;
+        }
+        .custom-input-area .input-row .btn-solve:hover {
+            transform: scale(1.04);
+        }
+        .custom-input-area .input-row .btn-random {
+            padding: 8px 14px;
+            background: var(--bg-card);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-family: var(--font);
+            transition: all 0.2s;
+        }
+        .custom-input-area .input-row .btn-random:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+        .custom-input-area .custom-result {
+            margin-top: 8px;
+            font-size: 0.95rem;
+            min-height: 24px;
+            color: var(--text-secondary);
+            word-break: break-all;
+        }
+        .custom-input-area .custom-result.success {
+            color: var(--success);
+        }
+        .custom-input-area .custom-result.fail {
+            color: var(--error);
+        }
+
+        .game-area {
+            max-width: 540px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .game-area .cards-display {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            padding: 20px 0;
+            flex-wrap: wrap;
+        }
+        .game-area .card-item {
+            width: 72px;
+            height: 96px;
+            background: var(--bg-card);
+            border: 3px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.4rem;
+            font-weight: 900;
+            color: var(--text-primary);
+            box-shadow: var(--shadow);
+            transition: all 0.2s;
+        }
+        .game-area .card-item.used {
+            opacity: 0.3;
+            transform: scale(0.85);
+        }
+        [data-theme="dark"] .game-area .card-item {
+            border-color: #2a3a5a;
+        }
+
+        .game-area .difficulty-tag {
+            display: inline-block;
+            padding: 2px 14px;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .game-area .difficulty-tag.easy {
+            background: #7bcb7a;
+            color: #fff;
+        }
+        .game-area .difficulty-tag.medium {
+            background: #f0b84a;
+            color: #fff;
+        }
+        .game-area .difficulty-tag.hard {
+            background: #e86b6b;
+            color: #fff;
+        }
+
+        .game-area .expr-display {
+            min-height: 50px;
+            padding: 10px 16px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+            border: 2px dashed var(--border-color);
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin: 8px 0 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 2px;
+        }
+
+        .btn-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+            max-width: 420px;
+            margin: 0 auto;
+        }
+        .btn-row.mt-8 {
+            margin-top: 8px;
+        }
+
+        .btn-input {
+            padding: 12px 0;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-family: var(--font);
+            transition: all 0.15s;
+        }
+        .btn-input:hover:not(:disabled) {
+            border-color: var(--accent);
+            transform: scale(1.04);
+        }
+        .btn-input:active:not(:disabled) {
+            transform: scale(0.94);
+        }
+        .btn-input:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .btn-input.btn-num {
+            background: var(--bg-card);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        [data-theme="dark"] .btn-input.btn-num {
+            border-color: #00c8e8;
+            color: #00c8e8;
+        }
+        .btn-input.btn-op {
+            background: var(--bg-card);
+            border-color: #c8d4e0;
+        }
+        .btn-input.btn-action {
+            background: var(--accent);
+            color: #fff;
+            border-color: var(--accent);
+        }
+        [data-theme="dark"] .btn-input.btn-action {
+            color: #080c18;
+        }
+        .btn-input.btn-clear {
+            background: var(--error);
+            color: #fff;
+            border-color: var(--error);
+        }
+
+        .game-area .action-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+        .game-area .action-row .btn-check {
+            padding: 10px 32px;
+            background: var(--success);
+            border: none;
+            border-radius: 30px;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            font-family: var(--font);
+            transition: all 0.2s;
+        }
+        .game-area .action-row .btn-check:hover:not(:disabled) {
+            transform: scale(1.04);
+        }
+        .game-area .action-row .btn-check:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .game-area .action-row .btn-hint {
+            padding: 10px 24px;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: 30px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            font-family: var(--font);
+            transition: all 0.2s;
+        }
+        .game-area .action-row .btn-hint:hover:not(:disabled) {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+        .game-area .action-row .btn-hint:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+
+        .game-area .result-msg {
+            font-size: 1.1rem;
+            font-weight: 700;
+            margin: 10px 0;
+            min-height: 32px;
+        }
+        .game-area .result-msg.correct {
+            color: var(--success);
+        }
+        .game-area .result-msg.wrong {
+            color: var(--error);
+        }
+        .game-area .solution-list {
+            text-align: left;
+            margin: 8px 0;
+            padding: 8px 12px;
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+            border: 1px solid var(--border-color);
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 0.85rem;
+        }
+        .game-area .solution-list .s-item {
+            padding: 2px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-family: monospace;
+            font-size: 0.95rem;
+        }
+        .game-area .solution-list .s-item:last-child {
+            border-bottom: none;
+        }
+        .game-area .solution-list .s-label {
+            font-weight: 700;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            margin-bottom: 4px;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.55);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .modal-overlay.active {
+            display: flex;
+        }
+        .modal {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 28px 24px 24px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            border: 1px solid var(--border-color);
+            max-height: 90vh;
+            overflow-y: auto;
+            transition: background 0.3s, border 0.3s;
+        }
+        .modal .m-icon {
+            font-size: 3.2rem;
+            margin-bottom: 4px;
+        }
+        .modal h2 {
+            font-size: 1.4rem;
+            margin-bottom: 2px;
+            color: var(--text-primary);
+        }
+        .modal .m-score {
+            font-size: 2.6rem;
+            font-weight: 900;
+            color: var(--accent);
+            margin: 4px 0;
+        }
+        .modal .m-detail {
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+        .modal .m-rank {
+            background: var(--bg-primary);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            margin: 8px 0 14px;
+            font-size: 0.85rem;
+            text-align: left;
+        }
+        .modal .m-rank .rank-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 3px 0;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+        .modal .m-rank .rank-item:last-child {
+            border-bottom: none;
+        }
+        .modal .m-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        @media (max-width: 640px) {
+            .header {
+                padding: 10px 12px;
+                flex-direction: column;
+                align-items: stretch;
+                gap: 4px;
+            }
+            .game-name {
+                text-align: center;
+                font-size: 1rem;
+            }
+            .stats {
+                justify-content: center;
+                font-size: 0.7rem;
+                gap: 10px;
+            }
+            .content {
+                padding: 14px 10px;
+                min-height: 240px;
+            }
+            .game-area .card-item {
+                width: 56px;
+                height: 76px;
+                font-size: 1.8rem;
+            }
+            .game-area .cards-display {
+                gap: 10px;
+                padding: 14px 0;
+            }
+            .game-area .expr-display {
+                font-size: 1.2rem;
+                min-height: 40px;
+                padding: 8px 12px;
+            }
+            .btn-row {
+                gap: 6px;
+                max-width: 340px;
+            }
+            .btn-input {
+                font-size: 1.1rem;
+                padding: 10px 0;
+            }
+            .diff-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 6px;
+            }
+            .diff-card {
+                padding: 10px 6px;
+            }
+            .diff-card .d-icon {
+                font-size: 1.4rem;
+            }
+            .diff-card .d-name {
+                font-size: 0.8rem;
+            }
+            .modal {
+                padding: 20px 16px;
+            }
+            .modal .m-score {
+                font-size: 2rem;
+            }
+            .start-screen .icon {
+                font-size: 3rem;
+            }
+            .start-screen h2 {
+                font-size: 1.3rem;
+            }
+            .btn-primary {
+                padding: 8px 20px;
+                font-size: 0.85rem;
+            }
+            .custom-input-area .input-row input {
+                width: 46px;
+                font-size: 1rem;
+                padding: 6px 2px;
+            }
+            .custom-input-area .input-row .btn-solve {
+                padding: 6px 14px;
+                font-size: 0.85rem;
+            }
+            .custom-input-area .input-row .btn-random {
+                padding: 6px 10px;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .game-area .card-item {
+                width: 46px;
+                height: 64px;
+                font-size: 1.4rem;
+            }
+            .game-area .cards-display {
+                gap: 6px;
+            }
+            .game-area .expr-display {
+                font-size: 1rem;
+                min-height: 34px;
+            }
+            .btn-row {
+                gap: 4px;
+                max-width: 280px;
+            }
+            .btn-input {
+                font-size: 0.95rem;
+                padding: 8px 0;
+            }
+            .diff-grid {
+                grid-template-columns: 1fr;
+                gap: 4px;
+            }
+            .custom-input-area .input-row input {
+                width: 38px;
+                font-size: 0.9rem;
+                padding: 4px 2px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <script>
+        (function() {
+            var saved = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
+
+    <div class="container">
+        <header class="header">
+            <div class="game-name">🃏 24点</div>
+            <div class="stats">
+                <span>🏆 最高连对: <span class="num" id="bestScore">0</span></span>
+                <span>📊 当前: <span class="num" id="currentStreak">0</span></span>
+            </div>
+        </header>
+
+        <div class="content" id="gameContent"></div>
+
+        <div class="bottom-bar">
+            <a class="btn-back" href="index.html">← 返回主菜单</a>
+            <button class="btn-secondary" id="resetBtn">🔄 重新开始</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="resultModal">
+        <div class="modal" id="resultModalContent"></div>
+    </div>
+
+    <script src="data/24-data.js"></script>
+    <script>
+        // ============================================================
+        // 24点 - 完整版（含手动输入）
+        // ============================================================
+
+        function applyTheme() {
+            var saved = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', saved);
+        }
+        applyTheme();
+
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'theme') applyTheme();
+        });
+
+        var lastTheme = localStorage.getItem('theme') || 'light';
+        setInterval(function() {
+            var current = localStorage.getItem('theme') || 'light';
+            if (current !== lastTheme) {
+                lastTheme = current;
+                applyTheme();
+            }
+        }, 2000);
+
+        var $content = document.getElementById('gameContent');
+        var $best = document.getElementById('bestScore');
+        var $streak = document.getElementById('currentStreak');
+        var $resetBtn = document.getElementById('resetBtn');
+        var $modal = document.getElementById('resultModal');
+        var $modalContent = document.getElementById('resultModalContent');
+
+        function shuffle(arr) {
+            for (var i = arr.length - 1; i > 0; i--) {
+                var j = Math.floor(Math.random() * (i + 1));
+                var temp = arr[i];
+                arr[i] = arr[j];
+                arr[j] = temp;
+            }
+            return arr;
+        }
+
+        function getBestScore(key) {
+            try {
+                var data = localStorage.getItem('rank_' + key);
+                var list = data ? JSON.parse(data) : [];
+                if (list.length === 0) return 0;
+                var max = 0;
+                for (var i = 0; i < list.length; i++) {
+                    if (list[i].score > max) max = list[i].score;
+                }
+                return max;
+            } catch (e) { return 0; }
+        }
+
+        function saveRank(key, score) {
+            try {
+                var data = localStorage.getItem('rank_' + key);
+                var list = data ? JSON.parse(data) : [];
+                list.push({ score: score, time: Date.now() });
+                if (list.length > 50) list.shift();
+                localStorage.setItem('rank_' + key, JSON.stringify(list));
+            } catch (e) {}
+        }
+
+        function getRankList(key, limit) {
+            try {
+                var data = localStorage.getItem('rank_' + key);
+                var list = data ? JSON.parse(data) : [];
+                list.sort(function(a, b) { return b.score - a.score; });
+                return list.slice(0, limit || 10);
+            } catch (e) { return []; }
+        }
+
+        // ============================================================
+        // 24点求解器（用于手动输入）
+        // ============================================================
+        function solve24(nums) {
+            var OPS = ['+', '-', '*', '/'];
+
+            function calc(a, op, b) {
+                switch (op) {
+                    case '+':
+                        return a + b;
+                    case '-':
+                        return a - b;
+                    case '*':
+                        return a * b;
+                    case '/':
+                        return b !== 0 ? a / b : null;
+                }
+                return null;
+            }
+
+            function evaluateAll(a, b, c, d, op1, op2, op3) {
+                var results = [];
+                var r, r1, r2;
+
+                r1 = calc(a, op1, b);
+                if (r1 !== null) {
+                    r2 = calc(r1, op2, c);
+                    if (r2 !== null) {
+                        r = calc(r2, op3, d);
+                        if (r !== null) results.push({ value: r, expr: '((' + a + op1 + b + ')' + op2 + c + ')' + op3 +
+                            d });
+                    }
+                }
+
+                r1 = calc(b, op2, c);
+                if (r1 !== null) {
+                    r2 = calc(a, op1, r1);
+                    if (r2 !== null) {
+                        r = calc(r2, op3, d);
+                        if (r !== null) results.push({ value: r, expr: '(' + a + op1 + '(' + b + op2 + c + '))' + op3 +
+                            d });
+                    }
+                }
+
+                r1 = calc(a, op1, b);
+                r2 = calc(c, op3, d);
+                if (r1 !== null && r2 !== null) {
+                    r = calc(r1, op2, r2);
+                    if (r !== null) results.push({ value: r, expr: '(' + a + op1 + b + ')' + op2 + '(' + c + op3 + d +
+                            ')' });
+                }
+
+                r1 = calc(b, op2, c);
+                if (r1 !== null) {
+                    r2 = calc(r1, op3, d);
+                    if (r2 !== null) {
+                        r = calc(a, op1, r2);
+                        if (r !== null) results.push({ value: r, expr: a + op1 + '((' + b + op2 + c + ')' + op3 + d +
+                                ')' });
+                    }
+                }
+
+                r1 = calc(c, op3, d);
+                if (r1 !== null) {
+                    r2 = calc(b, op2, r1);
+                    if (r2 !== null) {
+                        r = calc(a, op1, r2);
+                        if (r !== null) results.push({ value: r, expr: a + op1 + '(' + b + op2 + '(' + c + op3 + d +
+                                '))' });
+                    }
+                }
+
+                return results;
+            }
+
+            var solutions = [];
+            var seen = {};
+            var perms = [];
+
+            for (var i = 0; i < 4; i++) {
+                for (var j = 0; j < 4; j++) {
+                    if (j === i) continue;
+                    for (var k = 0; k < 4; k++) {
+                        if (k === i || k === j) continue;
+                        for (var l = 0; l < 4; l++) {
+                            if (l === i || l === j || l === k) continue;
+                            perms.push([nums[i], nums[j], nums[k], nums[l]]);
+                        }
+                    }
+                }
+            }
+
+            var opSymbols = ['+', '-', '*', '/'];
+            for (var p = 0; p < perms.length; p++) {
+                var a = perms[p][0],
+                    b = perms[p][1],
+                    c = perms[p][2],
+                    d = perms[p][3];
+                for (var o1 = 0; o1 < 4; o1++) {
+                    for (var o2 = 0; o2 < 4; o2++) {
+                        for (var o3 = 0; o3 < 4; o3++) {
+                            var results = evaluateAll(a, b, c, d, opSymbols[o1], opSymbols[o2], opSymbols[o3]);
+                            for (var r = 0; r < results.length; r++) {
+                                var res = results[r];
+                                if (Math.abs(res.value - 24) < 0.0001) {
+                                    var display = res.expr.replace(/\*/g, '×').replace(/\//g, '÷');
+                                    if (!seen[display]) {
+                                        seen[display] = true;
+                                        solutions.push(display);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return solutions;
+        }
+
+        // 手动输入求解
+        function solveCustom() {
+            var num1 = parseInt(document.getElementById('num1').value);
+            var num2 = parseInt(document.getElementById('num2').value);
+            var num3 = parseInt(document.getElementById('num3').value);
+            var num4 = parseInt(document.getElementById('num4').value);
+            var resultDiv = document.getElementById('customResult');
+
+            // 验证输入
+            var nums = [num1, num2, num3, num4];
+            for (var i = 0; i < nums.length; i++) {
+                if (isNaN(nums[i]) || nums[i] < 1 || nums[i] > 10) {
+                    resultDiv.className = 'custom-result fail';
+                    resultDiv.textContent = '⚠️ 请输入1-10之间的整数！';
+                    return;
+                }
+            }
+
+            var solutions = solve24(nums);
+            if (solutions.length === 0) {
+                resultDiv.className = 'custom-result fail';
+                resultDiv.textContent = '❌ 这组数字无解！';
+            } else {
+                resultDiv.className = 'custom-result success';
+                var display = '✅ 找到 ' + solutions.length + ' 种解法：';
+                for (var i = 0; i < Math.min(solutions.length, 5); i++) {
+                    display += ' ' + solutions[i];
+                    if (i < Math.min(solutions.length, 5) - 1) display += '；';
+                }
+                if (solutions.length > 5) {
+                    display += ' ...等' + solutions.length + '种';
+                }
+                resultDiv.textContent = display;
+            }
+        }
+
+        function randomCustom() {
+            var nums = [];
+            for (var i = 0; i < 4; i++) {
+                nums.push(Math.floor(Math.random() * 10) + 1);
+            }
+            document.getElementById('num1').value = nums[0];
+            document.getElementById('num2').value = nums[1];
+            document.getElementById('num3').value = nums[2];
+            document.getElementById('num4').value = nums[3];
+            // 自动求解
+            solveCustom();
+        }
+
+        // 暴露到全局
+        window.solveCustom = solveCustom;
+        window.randomCustom = randomCustom;
+
+        // ============================================================
+        // 游戏逻辑
+        // ============================================================
+
+        var DIFFICULTIES = {
+            easy: { label: '⭐ 简单', grade: '加减乘', desc: '只用+、−、×', icon: '🌟' },
+            medium: { label: '⭐⭐ 中等', grade: '四则运算', desc: '含整除除法', icon: '⚡' },
+            hard: { label: '⭐⭐⭐ 困难', grade: '含分数', desc: '含分数中间结果', icon: '🔥' }
+        };
+
+        var currentDifficulty = 'easy';
+        var gameRunning = false;
+
+        var currentQuestion = null;
+        var currentIndex = 0;
+        var currentStreak = 0;
+        var currentBest = 0;
+        var questions = [];
+        var answered = false;
+
+        var expression = [];
+        var usedIndices = [];
+
+        function getQuestions(diff, count) {
+            var bank = TWENTYFOUR_QUESTIONS[diff] || TWENTYFOUR_QUESTIONS.easy;
+            var shuffled = shuffle(bank.slice(0));
+            return shuffled.slice(0, count || Math.min(shuffled.length, 100));
+        }
+
+        function render() {
+            if (!gameRunning) { renderStartScreen(); return; }
+            renderGame();
+        }
+
+        function renderStartScreen() {
+            var key = '24_' + currentDifficulty;
+            $best.textContent = getBestScore(key);
+            $streak.textContent = '0';
+
+            var diffHtml = '';
+            var keys = Object.keys(DIFFICULTIES);
+            for (var i = 0; i < keys.length; i++) {
+                var k = keys[i];
+                var d = DIFFICULTIES[k];
+                var selected = k === currentDifficulty ? 'selected' : '';
+                diffHtml += '<div class="diff-card ' + selected + '" data-diff="' + k + '">';
+                diffHtml += '<div class="d-icon">' + d.icon + '</div>';
+                diffHtml += '<div class="d-name">' + d.label + '</div>';
+                diffHtml += '<div class="d-grade">' + d.grade + '</div>';
+                diffHtml += '<div class="d-desc">' + d.desc + '</div>';
+                diffHtml += '</div>';
+            }
+
+            $content.innerHTML =
+                '<div class="start-screen">' +
+                '<div class="icon">🃏</div>' +
+                '<h2>24点</h2>' +
+                '<p class="desc">用4张牌凑出24！选择难度开始挑战</p>' +
+
+                // 手动输入区域
+                '<div class="custom-input-area">' +
+                '<div style="font-size:0.8rem;color:var(--text-secondary);margin-bottom:8px;">✏️ 手动输入4个数字（1-10），自动求解</div>' +
+                '<div class="input-row">' +
+                '<input type="number" id="num1" min="1" max="10" value="1">' +
+                '<input type="number" id="num2" min="1" max="10" value="2">' +
+                '<input type="number" id="num3" min="1" max="10" value="3">' +
+                '<input type="number" id="num4" min="1" max="10" value="4">' +
+                '<button class="btn-solve" onclick="solveCustom()">求解</button>' +
+                '<button class="btn-random" onclick="randomCustom()">随机</button>' +
+                '</div>' +
+                '<div class="custom-result" id="customResult"></div>' +
+                '</div>' +
+
+                '<div class="diff-grid">' + diffHtml + '</div>' +
+                '<div class="btn-group">' +
+                '<button class="btn-primary" onclick="startGame()">🎯 开始挑战</button>' +
+                '</div>' +
+                '<div style="margin-top:12px;font-size:0.8rem;color:var(--text-secondary);">' +
+                '无限闯关 · 错一题淘汰 · 记录最高连对' +
+                '</div>' +
+                '</div>';
+
+            var cards = document.querySelectorAll('.diff-card');
+            for (var i = 0; i < cards.length; i++) {
+                (function(card) {
+                    card.addEventListener('click', function() {
+                        var diff = this.dataset.diff;
+                        if (diff === currentDifficulty) return;
+                        currentDifficulty = diff;
+                        var allCards = document.querySelectorAll('.diff-card');
+                        for (var j = 0; j < allCards.length; j++) {
+                            allCards[j].classList.remove('selected');
+                        }
+                        this.classList.add('selected');
+                        if (gameRunning) {
+                            gameRunning = false;
+                            resetGame();
+                        }
+                        var key = '24_' + currentDifficulty;
+                        $best.textContent = getBestScore(key);
+                    });
+                })(cards[i]);
+            }
+
+            // 自动求解默认数字
+            setTimeout(function() {
+                var resultDiv = document.getElementById('customResult');
+                if (resultDiv && resultDiv.textContent === '') {
+                    solveCustom();
+                }
+            }, 100);
+        }
+
+        function startGame() {
+            gameRunning = true;
+            currentIndex = 0;
+            currentStreak = 0;
+            var key = '24_' + currentDifficulty;
+            currentBest = getBestScore(key);
+            questions = getQuestions(currentDifficulty, 100);
+            if (questions.length === 0) {
+                questions = getQuestions('easy', 30);
+            }
+            answered = false;
+            expression = [];
+            usedIndices = [];
+            renderGame();
+        }
+
+        function renderGame() {
+            if (currentIndex >= questions.length) {
+                var extra = getQuestions(currentDifficulty, 30);
+                questions = questions.concat(extra);
+            }
+
+            currentQuestion = questions[currentIndex];
+            var diff = currentDifficulty;
+            var tagClass = diff === 'easy' ? 'easy' : (diff === 'medium' ? 'medium' : 'hard');
+            var diffLabel = DIFFICULTIES[diff].label;
+
+            var key = '24_' + currentDifficulty;
+            $best.textContent = currentBest;
+            $streak.textContent = currentStreak;
+
+            var cardsHtml = '';
+            for (var i = 0; i < 4; i++) {
+                var isUsed = usedIndices.indexOf(i) !== -1;
+                cardsHtml += '<div class="card-item ' + (isUsed ? 'used' : '') + '">' + currentQuestion.nums[i] + '</div>';
+            }
+
+            var exprDisplay = expression.length > 0 ? expression.join(' ') : '点击下方数字和运算符构建算式';
+
+            var numBtns = '';
+            for (var i = 0; i < 4; i++) {
+                var disabled = usedIndices.indexOf(i) !== -1 ? 'disabled' : '';
+                numBtns += '<button class="btn-input btn-num" onclick="addNumber(' + i + ')" ' + disabled + '>' + currentQuestion
+                    .nums[i] + '</button>';
+            }
+
+            var opBtns = '';
+            var ops = ['+', '−', '×', '÷'];
+            for (var i = 0; i < ops.length; i++) {
+                opBtns += '<button class="btn-input btn-op" onclick="addOperator(\'' + ops[i] + '\')">' + ops[i] + '</button>';
+            }
+
+            var actionBtns = '';
+            actionBtns += '<button class="btn-input btn-action" onclick="addLeftParen()">(</button>';
+            actionBtns += '<button class="btn-input btn-action" onclick="addRightParen()">)</button>';
+            actionBtns += '<button class="btn-input btn-clear" onclick="clearExpr()">✕</button>';
+            actionBtns += '<button class="btn-input btn-action" onclick="backspace()">⌫</button>';
+
+            var isComplete = expression.length > 0 && usedIndices.length === 4;
+            var checkDisabled = answered || !isComplete ? 'disabled' : '';
+            var hintDisabled = answered ? 'disabled' : '';
+
+            var solutionHtml = '';
+            if (answered) {
+                var sols = currentQuestion.solutions || [];
+                if (sols.length > 0) {
+                    solutionHtml = '<div class="solution-list">' +
+                        '<div class="s-label">💡 所有解法 (' + sols.length + '种)：</div>';
+                    for (var i = 0; i < Math.min(sols.length, 10); i++) {
+                        solutionHtml += '<div class="s-item">' + sols[i] + '</div>';
+                    }
+                    if (sols.length > 10) {
+                        solutionHtml += '<div class="s-item" style="color:var(--text-light);font-size:0.75rem;">...还有 ' +
+                            (sols.length - 10) + ' 种</div>';
+                    }
+                    solutionHtml += '</div>';
+                }
+            }
+
+            $content.innerHTML =
+                '<div class="game-area">' +
+                '<div class="progress-info">' +
+                '<span class="difficulty-tag ' + tagClass + '">' + diffLabel + '</span>' +
+                ' · 第 ' + (currentIndex + 1) + ' 题' +
+                '</div>' +
+                '<div class="cards-display">' + cardsHtml + '</div>' +
+                '<div class="expr-display" id="exprDisplay">' + exprDisplay + '</div>' +
+                '<div class="btn-row">' + numBtns + '</div>' +
+                '<div class="btn-row mt-8">' + opBtns + '</div>' +
+                '<div class="btn-row mt-8">' + actionBtns + '</div>' +
+                '<div class="action-row">' +
+                '<button class="btn-check" onclick="checkAnswer()" ' + checkDisabled + '>✅ 验证</button>' +
+                '<button class="btn-hint" onclick="showHint()" ' + hintDisabled + '>💡 提示</button>' +
+                '</div>' +
+                '<div class="result-msg" id="resultMsg"></div>' +
+                solutionHtml +
+                '</div>';
+
+            var numBtnsEls = document.querySelectorAll('.btn-row .btn-num');
+            for (var i = 0; i < numBtnsEls.length; i++) {
+                var idx = i;
+                if (usedIndices.indexOf(idx) !== -1) {
+                    numBtnsEls[i].disabled = true;
+                }
+            }
+        }
+
+        function addNumber(index) {
+            if (answered || usedIndices.indexOf(index) !== -1) return;
+            usedIndices.push(index);
+            expression.push(String(currentQuestion.nums[index]));
+            renderGame();
+        }
+
+        function addOperator(op) {
+            if (answered) return;
+            var last = expression[expression.length - 1] || '';
+            if (last === '+' || last === '−' || last === '×' || last === '÷' || last === '(') return;
+            if (expression.length === 0) return;
+            expression.push(op);
+            renderGame();
+        }
+
+        function addLeftParen() {
+            if (answered) return;
+            var last = expression[expression.length - 1] || '';
+            if (last === '' || last === '+' || last === '−' || last === '×' || last === '÷' || last === '(') {
+                expression.push('(');
+                renderGame();
+            } else {
+                expression.push('×');
+                expression.push('(');
+                renderGame();
+            }
+        }
+
+        function addRightParen() {
+            if (answered) return;
+            var last = expression[expression.length - 1] || '';
+            if (last === '+' || last === '−' || last === '×' || last === '÷' || last === '(' || last === '') {
+                return;
+            }
+            var openCount = 0,
+                closeCount = 0;
+            for (var i = 0; i < expression.length; i++) {
+                if (expression[i] === '(') openCount++;
+                if (expression[i] === ')') closeCount++;
+            }
+            if (openCount > closeCount) {
+                expression.push(')');
+                renderGame();
+            }
+        }
+
+        function backspace() {
+            if (answered) return;
+            if (expression.length === 0) return;
+            var removed = expression.pop();
+            if (!isNaN(removed) && removed !== '(' && removed !== ')') {
+                var num = parseInt(removed);
+                for (var i = usedIndices.length - 1; i >= 0; i--) {
+                    if (currentQuestion.nums[usedIndices[i]] === num) {
+                        usedIndices.splice(i, 1);
+                        break;
+                    }
+                }
+            }
+            renderGame();
+        }
+
+        function clearExpr() {
+            if (answered) return;
+            expression = [];
+            usedIndices = [];
+            renderGame();
+        }
+
+        function checkAnswer() {
+            if (answered) return;
+            if (usedIndices.length !== 4) {
+                var msg = document.getElementById('resultMsg');
+                msg.className = 'result-msg wrong';
+                msg.textContent = '⚠️ 请使用全部4张牌！';
+                return;
+            }
+
+            var expr = expression.join('');
+
+            var openCount = 0,
+                closeCount = 0;
+            for (var i = 0; i < expr.length; i++) {
+                if (expr[i] === '(') openCount++;
+                if (expr[i] === ')') closeCount++;
+            }
+            if (openCount !== closeCount) {
+                var msg = document.getElementById('resultMsg');
+                msg.className = 'result-msg wrong';
+                msg.textContent = '⚠️ 括号不匹配！';
+                return;
+            }
+
+            try {
+                var evalExpr = expr.replace(/×/g, '*').replace(/÷/g, '/').replace(/−/g, '-');
+                var result = Function('"use strict"; return (' + evalExpr + ')')();
+                var isCorrect = Math.abs(result - 24) < 0.0001;
+
+                answered = true;
+                var msg = document.getElementById('resultMsg');
+
+                if (isCorrect) {
+                    msg.className = 'result-msg correct';
+                    msg.textContent = '✅ 恭喜！' + expr + ' = 24';
+
+                    currentStreak++;
+                    if (currentStreak > currentBest) {
+                        currentBest = currentStreak;
+                        var key = '24_' + currentDifficulty;
+                        saveRank(key, currentBest);
+                        $best.textContent = currentBest;
+                    }
+                    $streak.textContent = currentStreak;
+
+                    showAllSolutions();
+
+                    setTimeout(function() {
+                        currentIndex++;
+                        answered = false;
+                        expression = [];
+                        usedIndices = [];
+                        if (currentIndex >= questions.length) {
+                            var extra = getQuestions(currentDifficulty, 30);
+                            questions = questions.concat(extra);
+                        }
+                        renderGame();
+                    }, 1500);
+                } else {
+                    msg.className = 'result-msg wrong';
+                    msg.innerHTML = '❌ ' + expr + ' = ' + Math.round(result * 100) / 100 + '，不等于24';
+                    showAllSolutions();
+                    setTimeout(function() {
+                        showResult(currentStreak);
+                    }, 1500);
+                }
+            } catch (e) {
+                var msg = document.getElementById('resultMsg');
+                msg.className = 'result-msg wrong';
+                msg.textContent = '⚠️ 算式格式错误，请重新输入';
+                answered = false;
+            }
+        }
+
+        function showAllSolutions() {
+            var sols = currentQuestion.solutions || [];
+            if (sols.length === 0) return;
+
+            var container = document.querySelector('.game-area');
+            var existing = container.querySelector('.solution-list');
+            if (existing) existing.remove();
+
+            var html = '<div class="solution-list">' +
+                '<div class="s-label">💡 所有解法 (' + sols.length + '种)：</div>';
+            for (var i = 0; i < Math.min(sols.length, 15); i++) {
+                html += '<div class="s-item">' + sols[i] + '</div>';
+            }
+            if (sols.length > 15) {
+                html += '<div class="s-item" style="color:var(--text-light);font-size:0.75rem;">...还有 ' + (sols.length - 15) +
+                    ' 种</div>';
+            }
+            html += '</div>';
+
+            var msg = document.getElementById('resultMsg');
+            msg.insertAdjacentHTML('afterend', html);
+        }
+
+        function showHint() {
+            if (answered) return;
+            var sols = currentQuestion.solutions || [];
+            if (sols.length === 0) {
+                var msg = document.getElementById('resultMsg');
+                msg.className = 'result-msg wrong';
+                msg.textContent = '⚠️ 暂无解法记录，请自行尝试';
+                return;
+            }
+            var msg = document.getElementById('resultMsg');
+            msg.className = 'result-msg';
+            msg.innerHTML = '💡 提示：' + sols[0];
+        }
+
+        function showResult(score) {
+            gameRunning = false;
+            var key = '24_' + currentDifficulty;
+            var rankList = getRankList(key, 5);
+
+            var icon, title, detail;
+            if (score >= 10) { icon = '🏆';
+                title = '太厉害了！';
+                detail = '你是24点大师！'; } else if (score >= 5) { icon = '🌟';
+                title = '表现优秀！'; } else if (score >= 3) { icon = '💪';
+                title = '再接再厉！'; } else if (score >= 1) { icon = '📖';
+                title = '继续加油！'; } else { icon = '🌱';
+                title = '开始你的24点之旅！'; }
+
+            var rankHtml = rankList.length > 0 ? '' :
+                '<div style="text-align:center;color:var(--text-secondary);padding:8px 0;">暂无记录</div>';
+            for (var i = 0; i < rankList.length; i++) {
+                rankHtml += '<div class="rank-item"><span>#' + (i + 1) + '</span><span>' + rankList[i].score +
+                    ' 连对</span></div>';
+            }
+
+            var sols = currentQuestion ? currentQuestion.solutions : [];
+            var solHtml = '';
+            if (sols && sols.length > 0) {
+                solHtml = '<div style="text-align:left;margin:8px 0;padding:8px 12px;background:var(--bg-primary);border-radius:8px;max-height:100px;overflow-y:auto;font-size:0.8rem;">' +
+                    '<div style="font-weight:700;font-size:0.7rem;color:var(--text-secondary);margin-bottom:4px;">💡 本题解法：</div>';
+                for (var i = 0; i < Math.min(sols.length, 5); i++) {
+                    solHtml += '<div style="padding:2px 0;border-bottom:1px solid var(--border-color);font-family:monospace;">' +
+                        sols[i] + '</div>';
+                }
+                if (sols.length > 5) {
+                    solHtml += '<div style="font-size:0.7rem;color:var(--text-light);padding-top:2px;">...还有 ' + (sols
+                        .length - 5) + ' 种</div>';
+                }
+                solHtml += '</div>';
+            }
+
+            $modalContent.innerHTML =
+                '<div class="m-icon">' + icon + '</div>' +
+                '<h2>' + title + '</h2>' +
+                '<div class="m-score">' + score + '</div>' +
+                '<div class="m-detail">' + detail + ' (' + DIFFICULTIES[currentDifficulty].label + ')</div>' +
+                solHtml +
+                '<div class="m-rank"><div style="font-weight:700;margin-bottom:6px;">🏅 积分榜 (最高连对)</div>' +
+                rankHtml + '</div>' +
+                '<div class="m-actions">' +
+                '<button class="btn-primary" onclick="closeResult(); startGame();">🔄 再来一局</button>' +
+                '<button class="btn-secondary" onclick="closeResult(); resetGame();">🏠 返回</button>' +
+                '</div>';
+            $modal.classList.add('active');
+        }
+
+        function closeResult() { $modal.classList.remove('active'); }
+
+        function resetGame() {
+            gameRunning = false;
+            answered = false;
+            expression = [];
+            usedIndices = [];
+            currentIndex = 0;
+            currentStreak = 0;
+            $streak.textContent = '0';
+            renderStartScreen();
+        }
+
+        $resetBtn.addEventListener('click', function() {
+            if (confirm('确定重新开始吗？')) { resetGame();
+                renderStartScreen(); }
+        });
+
+        $modal.addEventListener('click', function(e) {
+            if (e.target === this) closeResult();
+        });
+
+        console.log('🃏 24点已加载');
+        console.log('✅ 题库: 简单=' + (TWENTYFOUR_QUESTIONS.easy ? TWENTYFOUR_QUESTIONS.easy.length : 0) +
+            ' 中等=' + (TWENTYFOUR_QUESTIONS.medium ? TWENTYFOUR_QUESTIONS.medium.length : 0) +
+            ' 困难=' + (TWENTYFOUR_QUESTIONS.hard ? TWENTYFOUR_QUESTIONS.hard.length : 0));
+
+        renderStartScreen();
+        var key = '24_' + currentDifficulty;
+        $best.textContent = getBestScore(key);
+    </script>
+</body>
+</html>

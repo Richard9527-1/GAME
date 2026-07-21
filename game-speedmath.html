@@ -1,0 +1,1424 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+
+     <!-- 在 <head> 最前面加入这个脚本 -->
+    <script>
+        // 立即从 localStorage 读取并应用主题
+        (function() {
+            var saved = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', saved);
+        })();
+    </script>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>速算对决 - GAME</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        /* ===== 速算专用样式 ===== */
+
+        .duel-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            background: var(--bg-primary);
+            border-radius: var(--radius);
+            overflow: hidden;
+            border: 2px solid var(--border-color);
+            min-height: 520px;
+        }
+
+        .duel-player {
+            flex: 1;
+            padding: 10px 16px 8px;
+            min-height: 180px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: var(--bg-card);
+        }
+
+        .duel-player.bottom {
+            border-top: 2px solid var(--border-color);
+        }
+
+        .duel-player.top {
+            transform: rotate(180deg);
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .duel-player.top .duel-inner {
+            transform: none;
+        }
+
+        .duel-inner {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .duel-player-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            font-size: 0.85rem;
+            padding: 0 4px;
+        }
+
+        .duel-player-row .pname {
+            font-size: 1rem;
+        }
+        .duel-player-row .pname.p1 {
+            color: #f5a623;
+        }
+        .duel-player-row .pname.p2 {
+            color: #5b9bd5;
+        }
+        [data-theme="dark"] .duel-player-row .pname.p1 {
+            color: #ffb300;
+        }
+        [data-theme="dark"] .duel-player-row .pname.p2 {
+            color: #00b0ff;
+        }
+
+        .duel-player-row .pscore {
+            font-size: 1.1rem;
+            background: var(--bg-primary);
+            padding: 2px 14px;
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+        .duel-player-row .pscore.p1 {
+            color: #f5a623;
+            border-color: #f5a623;
+        }
+        .duel-player-row .pscore.p2 {
+            color: #5b9bd5;
+            border-color: #5b9bd5;
+        }
+        [data-theme="dark"] .duel-player-row .pscore.p1 {
+            color: #ffb300;
+            border-color: #ffb300;
+        }
+        [data-theme="dark"] .duel-player-row .pscore.p2 {
+            color: #00b0ff;
+            border-color: #00b0ff;
+        }
+
+        .duel-question {
+            text-align: center;
+            font-size: 1.8rem;
+            font-weight: 800;
+            padding: 4px 0 2px;
+            color: var(--text-primary);
+            letter-spacing: 1px;
+        }
+
+        .duel-options {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            max-width: 400px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .duel-opt {
+            padding: 10px 8px;
+            background: var(--bg-primary);
+            border: 2px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: var(--font);
+            text-align: center;
+            min-height: 46px;
+        }
+
+        .duel-opt:hover:not(.disabled) {
+            border-color: var(--accent);
+            transform: scale(1.02);
+        }
+        .duel-opt:active:not(.disabled) {
+            transform: scale(0.94);
+        }
+        .duel-opt.correct {
+            border-color: var(--success);
+            background: var(--success-bg);
+        }
+        .duel-opt.wrong {
+            border-color: var(--error);
+            background: var(--error-bg);
+        }
+        .duel-opt.disabled {
+            cursor: not-allowed;
+            opacity: 0.4;
+        }
+
+        /* ===== 中间比分栏 - 中心对称 ===== */
+        .duel-middle {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 8px 20px;
+            background: var(--bg-primary);
+            border-top: 2px solid var(--border-color);
+            border-bottom: 2px solid var(--border-color);
+            font-weight: 700;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            flex-shrink: 0;
+            gap: 16px;
+        }
+
+        .duel-middle .mid-left {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: flex-end;
+            flex: 1;
+            font-size: 0.85rem;
+        }
+
+        .duel-middle .mid-left .num {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #f5a623;
+            min-width: 40px;
+            text-align: center;
+        }
+        [data-theme="dark"] .duel-middle .mid-left .num {
+            color: #ffb300;
+        }
+
+        .duel-middle .mid-left .label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        .duel-middle .mid-right {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: flex-start;
+            flex: 1;
+            font-size: 0.85rem;
+            transform: rotate(180deg);
+        }
+
+        .duel-middle .mid-right .num {
+            font-size: 1.8rem;
+            font-weight: 900;
+            color: #5b9bd5;
+            min-width: 40px;
+            text-align: center;
+        }
+        [data-theme="dark"] .duel-middle .mid-right .num {
+            color: #00b0ff;
+        }
+
+        .duel-middle .mid-right .label {
+            font-size: 0.75rem;
+            color: var(--text-light);
+        }
+
+        .duel-middle .mid-vs {
+            font-size: 1.6rem;
+            color: var(--accent);
+            font-weight: 900;
+            flex-shrink: 0;
+            padding: 0 4px;
+        }
+
+        .duel-middle .mid-progress {
+            font-size: 0.75rem;
+            color: var(--text-light);
+            flex-shrink: 0;
+            margin-left: 12px;
+            padding: 2px 10px;
+            background: var(--bg-card);
+            border-radius: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .duel-status {
+            text-align: center;
+            font-size: 0.75rem;
+            color: var(--text-light);
+            min-height: 18px;
+            padding-top: 2px;
+        }
+        .duel-status.ok {
+            color: var(--success);
+        }
+        .duel-status.fail {
+            color: var(--error);
+        }
+
+        /* ===== 单人模式 ===== */
+        .single-area {
+            max-width: 520px;
+            margin: 0 auto;
+        }
+        .single-area .question-big {
+            font-size: 3rem;
+            font-weight: 800;
+            text-align: center;
+            padding: 20px 0 16px;
+            color: var(--text-primary);
+        }
+        .single-area .options-grid-single {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+        .single-area .opt-single {
+            padding: 16px;
+            background: var(--bg-primary);
+            border: 3px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            cursor: pointer;
+            transition: all 0.15s ease;
+            font-family: var(--font);
+            text-align: center;
+        }
+        .single-area .opt-single:hover:not(.disabled) {
+            border-color: var(--accent);
+            transform: scale(1.03);
+        }
+        .single-area .opt-single:active:not(.disabled) {
+            transform: scale(0.94);
+        }
+        .single-area .opt-single.correct {
+            border-color: var(--success);
+            background: var(--success-bg);
+        }
+        .single-area .opt-single.wrong {
+            border-color: var(--error);
+            background: var(--error-bg);
+        }
+        .single-area .opt-single.disabled {
+            cursor: not-allowed;
+            opacity: 0.4;
+        }
+        .single-area .progress-info {
+            text-align: center;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+        }
+        .single-area .difficulty-tag {
+            display: inline-block;
+            padding: 2px 14px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .single-area .difficulty-tag.easy {
+            background: #7bcb7a;
+            color: #fff;
+        }
+        .single-area .difficulty-tag.medium {
+            background: #f0b84a;
+            color: #fff;
+        }
+        .single-area .difficulty-tag.hard {
+            background: #e86b6b;
+            color: #fff;
+        }
+
+        /* ===== 开始界面 + 难度选择 ===== */
+        .start-screen {
+            text-align: center;
+            padding: 30px 20px;
+        }
+        .start-screen .big-icon {
+            font-size: 4rem;
+            margin-bottom: 12px;
+        }
+        .start-screen h2 {
+            font-size: 1.6rem;
+            margin-bottom: 6px;
+        }
+        .start-screen .desc {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .difficulty-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            max-width: 540px;
+            margin: 0 auto 20px;
+        }
+
+        .diff-card {
+            padding: 16px 12px;
+            background: var(--bg-card);
+            border: 3px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            transition: all var(--transition);
+            text-align: center;
+        }
+
+        .diff-card:hover {
+            border-color: var(--accent);
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .diff-card .diff-icon {
+            font-size: 2rem;
+            margin-bottom: 4px;
+        }
+        .diff-card .diff-name {
+            font-weight: 700;
+            font-size: 1rem;
+            color: var(--text-primary);
+        }
+        .diff-card .diff-grade {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+        .diff-card .diff-desc {
+            font-size: 0.7rem;
+            color: var(--text-light);
+            margin-top: 2px;
+        }
+
+        .diff-card.selected {
+            border-color: var(--accent);
+            background: var(--accent-light);
+            box-shadow: 0 0 0 3px var(--accent-light);
+        }
+
+        [data-theme="dark"] .diff-card.selected {
+            background: rgba(0, 200, 232, 0.15);
+            border-color: var(--accent);
+        }
+
+        .start-screen .btn-group {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 8px;
+        }
+
+        /* ===== 响应式 ===== */
+        @media (max-width: 640px) {
+            .duel-player {
+                padding: 8px 12px 6px;
+                min-height: 150px;
+            }
+            .duel-player.top {
+                padding: 8px 12px 6px;
+            }
+            .duel-player.bottom {
+                padding: 8px 12px 6px;
+            }
+            .duel-question {
+                font-size: 2rem;
+            }
+            .duel-opt {
+                font-size: 1.6rem;
+                padding: 12px 6px;
+                min-height: 50px;
+            }
+            .duel-player-row {
+                font-size: 0.9rem;
+            }
+            .duel-player-row .pscore {
+                font-size: 1.2rem;
+                padding: 2px 14px;
+            }
+            .duel-middle {
+                padding: 8px 16px;
+                gap: 10px;
+            }
+            .duel-middle .mid-left .num,
+            .duel-middle .mid-right .num {
+                font-size: 1.8rem;
+                min-width: 32px;
+            }
+            .duel-middle .mid-vs {
+                font-size: 1.4rem;
+            }
+            .duel-middle .mid-progress {
+                font-size: 0.7rem;
+                margin-left: 8px;
+                padding: 1px 8px;
+            }
+            .duel-middle .mid-left .label,
+            .duel-middle .mid-right .label {
+                font-size: 0.65rem;
+            }
+            .single-area .question-big {
+                font-size: 2.8rem;
+            }
+            .single-area .opt-single {
+                font-size: 1.8rem;
+                padding: 14px;
+            }
+            .duel-status {
+                font-size: 0.8rem;
+                min-height: 20px;
+            }
+            .difficulty-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+                gap: 8px;
+            }
+            .diff-card {
+                padding: 12px 8px;
+            }
+            .diff-card .diff-icon {
+                font-size: 1.5rem;
+            }
+            .diff-card .diff-name {
+                font-size: 0.85rem;
+            }
+            .diff-card .diff-grade {
+                font-size: 0.65rem;
+            }
+            .diff-card .diff-desc {
+                font-size: 0.6rem;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .duel-player {
+                padding: 6px 8px 4px;
+                min-height: 120px;
+            }
+            .duel-player.top {
+                padding: 6px 8px 4px;
+            }
+            .duel-player.bottom {
+                padding: 6px 8px 4px;
+            }
+            .duel-question {
+                font-size: 1.6rem;
+            }
+            .duel-opt {
+                font-size: 1.3rem;
+                padding: 8px 4px;
+                min-height: 40px;
+            }
+            .duel-player-row {
+                font-size: 0.75rem;
+            }
+            .duel-player-row .pscore {
+                font-size: 1rem;
+                padding: 1px 10px;
+            }
+            .duel-middle {
+                padding: 4px 10px;
+                gap: 6px;
+            }
+            .duel-middle .mid-left .num,
+            .duel-middle .mid-right .num {
+                font-size: 1.4rem;
+                min-width: 26px;
+            }
+            .duel-middle .mid-vs {
+                font-size: 1.2rem;
+            }
+            .duel-middle .mid-progress {
+                font-size: 0.6rem;
+                margin-left: 4px;
+                padding: 1px 6px;
+            }
+            .duel-middle .mid-left .label,
+            .duel-middle .mid-right .label {
+                font-size: 0.55rem;
+            }
+            .single-area .question-big {
+                font-size: 2.2rem;
+            }
+            .single-area .opt-single {
+                font-size: 1.4rem;
+                padding: 12px;
+            }
+            .difficulty-grid {
+                grid-template-columns: 1fr;
+                gap: 6px;
+            }
+        }
+
+        @media (min-width: 768px) and (orientation: landscape) {
+            .duel-container {
+                flex-direction: row;
+                min-height: 400px;
+            }
+            .duel-player.bottom {
+                border-top: none;
+                border-left: 2px solid var(--border-color);
+            }
+            .duel-player.top {
+                transform: rotate(180deg);
+                border-bottom: none;
+                border-right: 2px solid var(--border-color);
+            }
+            .duel-middle {
+                flex-direction: column;
+                padding: 12px 10px;
+                border-top: none;
+                border-bottom: none;
+                border-left: 2px solid var(--border-color);
+                border-right: 2px solid var(--border-color);
+                min-width: 80px;
+                gap: 6px;
+            }
+            .duel-middle .mid-left {
+                justify-content: center;
+                flex: none;
+                flex-direction: column;
+                gap: 2px;
+            }
+            .duel-middle .mid-right {
+                justify-content: center;
+                flex: none;
+                flex-direction: column;
+                gap: 2px;
+                transform: rotate(180deg);
+            }
+            .duel-middle .mid-vs {
+                font-size: 1.8rem;
+            }
+            .duel-middle .mid-progress {
+                margin-left: 0;
+                font-size: 0.65rem;
+            }
+            .duel-middle .mid-left .num,
+            .duel-middle .mid-right .num {
+                font-size: 2rem;
+                min-width: 36px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <header class="game-header">
+            <div class="game-name">⚡ 速算对决</div>
+            <div class="game-stats">
+                <span>🏆 最高连对: <span class="stat-num" id="bestScore">0</span></span>
+                <span>📊 当前: <span class="stat-num" id="currentStreak">0</span></span>
+            </div>
+            <div class="mode-toggle" id="modeToggle">
+                <button class="active" data-mode="single">🧑 单人</button>
+                <button data-mode="double">👫 双人</button>
+            </div>
+        </header>
+
+        <div class="game-content" id="gameContent"></div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top:16px; flex-wrap:wrap; gap:8px;">
+            <button class="btn-back" onclick="location.href='index.html'">← 返回主菜单</button>
+            <button class="btn-secondary" id="resetBtn" style="font-size:0.8rem;">🔄 重新开始</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="resultModal">
+        <div class="modal" id="resultModalContent"></div>
+    </div>
+
+    <script src="shared.js"></script>
+    <script>
+        // ============================================================
+        // 速算对决 - 完整版
+        // 难度选择：简单/中等/困难
+        // 单人：无限闯关，难度交替（简单↔困难）
+        // 双人：固定20题，使用选中的难度
+        // ============================================================
+        
+
+        // ============================================================
+// 夜间模式同步（从主菜单同步主题）
+// ============================================================
+
+function applyTheme() {
+    var saved = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', saved);
+}
+
+// 立即应用
+applyTheme();
+
+// 监听其他页面的主题变化（storage事件）
+window.addEventListener('storage', function(e) {
+    if (e.key === 'theme') {
+        applyTheme();
+    }
+});
+
+// 定时检查兜底（每2秒）
+var lastTheme = localStorage.getItem('theme') || 'light';
+setInterval(function() {
+    var current = localStorage.getItem('theme') || 'light';
+    if (current !== lastTheme) {
+        lastTheme = current;
+        applyTheme();
+    }
+}, 2000);
+
+
+        const $content = document.getElementById('gameContent');
+        const $best = document.getElementById('bestScore');
+        const $streak = document.getElementById('currentStreak');
+        const $resetBtn = document.getElementById('resetBtn');
+        const $modal = document.getElementById('resultModal');
+        const $modalContent = document.getElementById('resultModalContent');
+
+        // ===== 难度配置 =====
+        const DIFFICULTIES = {
+            easy: { label: '⭐ 简单', grade: '1-2年级', desc: '20以内加减', icon: '🌟', color: '#7bcb7a' },
+            medium: { label: '⭐⭐ 中等', grade: '3-4年级', desc: '表内乘除+加减', icon: '⚡', color: '#f0b84a' },
+            hard: { label: '⭐⭐⭐ 困难', grade: '5-6年级', desc: '多位数混合运算', icon: '🔥', color: '#e86b6b' }
+        };
+
+        let currentDifficulty = 'easy';
+
+        // ===== 题库生成器 =====
+        function genOpts(correct, range) {
+            range = range || Math.max(8, Math.abs(correct) + 4);
+            const opts = new Set([correct]);
+            let attempts = 0;
+            while (opts.size < 4 && attempts < 200) {
+                let offset = randomInt(1, range);
+                if (Math.random() > 0.5) offset = -offset;
+                const c = correct + offset;
+                if (c >= 0 && c <= 9999) opts.add(c);
+                attempts++;
+            }
+            while (opts.size < 4) {
+                opts.add(randomInt(0, Math.min(100, correct + 30)));
+            }
+            return shuffle(Array.from(opts));
+        }
+
+        // ---------- 简单 ----------
+        function genEasy(count) {
+            count = count || 200;
+            const qs = [];
+            for (let i = 0; i < count; i++) {
+                const a = randomInt(1, 19);
+                const b = randomInt(1, 20 - a);
+                const op = pick(['+', '-']);
+                let ans, display;
+                if (op === '+') { ans = a + b;
+                    display = `${a} + ${b} = ?`; } else { ans = a - b;
+                    display = `${a} - ${b} = ?`; if (ans < 0) { i--; continue; } }
+                qs.push({ question: display, answer: ans, options: genOpts(ans, 5) });
+            }
+            while (qs.length < count) {
+                const a = randomInt(1, 15);
+                const b = randomInt(1, 10);
+                const ans = a + b;
+                qs.push({ question: `${a} + ${b} = ?`, answer: ans, options: genOpts(ans, 5) });
+            }
+            return shuffle(qs);
+        }
+
+        // ---------- 中等 ----------
+        function genMedium(count) {
+            count = count || 200;
+            const qs = [];
+            for (let i = 0; i < count * 0.4; i++) {
+                const a = randomInt(20, 90);
+                const b = randomInt(1, 50);
+                const op = pick(['+', '-']);
+                let ans, display;
+                if (op === '+') { ans = a + b;
+                    display = `${a} + ${b} = ?`; } else { ans = a - b;
+                    display = `${a} - ${b} = ?`; if (ans < 0) { i--; continue; } }
+                qs.push({ question: display, answer: ans, options: genOpts(ans, 10) });
+            }
+            for (let i = 0; i < count * 0.3; i++) {
+                const a = randomInt(2, 9);
+                const b = randomInt(2, 9);
+                const ans = a * b;
+                qs.push({ question: `${a} × ${b} = ?`, answer: ans, options: genOpts(ans, 8) });
+            }
+            for (let i = 0; i < count * 0.3; i++) {
+                const a = randomInt(2, 9);
+                const b = randomInt(2, 9);
+                const product = a * b;
+                qs.push({ question: `${product} ÷ ${b} = ?`, answer: a, options: genOpts(a, 6) });
+            }
+            while (qs.length < count) {
+                const a = randomInt(2, 9);
+                const b = randomInt(2, 9);
+                const ans = a * b;
+                qs.push({ question: `${a} × ${b} = ?`, answer: ans, options: genOpts(ans, 8) });
+            }
+            return shuffle(qs);
+        }
+
+        // ---------- 困难 ----------
+        function genHard(count) {
+            count = count || 200;
+            const qs = [];
+            for (let i = 0; i < count * 0.3; i++) {
+                const a = randomInt(30, 180);
+                const b = randomInt(10, 90);
+                const op = pick(['+', '-']);
+                let ans, display;
+                if (op === '+') { ans = a + b;
+                    display = `${a} + ${b} = ?`; } else { ans = a - b;
+                    display = `${a} - ${b} = ?`; if (ans < 0) { i--; continue; } }
+                qs.push({ question: display, answer: ans, options: genOpts(ans, 15) });
+            }
+            for (let i = 0; i < count * 0.3; i++) {
+                const a = randomInt(11, 99);
+                const b = randomInt(2, 12);
+                const ans = a * b;
+                qs.push({ question: `${a} × ${b} = ?`, answer: ans, options: genOpts(ans, 20) });
+            }
+            for (let i = 0; i < count * 0.25; i++) {
+                const d = randomInt(2, 9);
+                const q = randomInt(2, 30);
+                const dividend = d * q;
+                qs.push({ question: `${dividend} ÷ ${d} = ?`, answer: q, options: genOpts(q, 10) });
+            }
+            for (let i = 0; i < count * 0.15; i++) {
+                const a = randomInt(2, 12);
+                const b = randomInt(2, 12);
+                const c = randomInt(1, 30);
+                const op = pick(['+', '-']);
+                let ans, display;
+                if (op === '+') { ans = a * b + c;
+                    display = `${a} × ${b} + ${c} = ?`; } else { ans = a * b - c;
+                    display = `${a} × ${b} - ${c} = ?`; if (ans < 0) { i--; continue; } }
+                qs.push({ question: display, answer: ans, options: genOpts(ans, 15) });
+            }
+            while (qs.length < count) {
+                const a = randomInt(11, 30);
+                const b = randomInt(2, 9);
+                const ans = a * b;
+                qs.push({ question: `${a} × ${b} = ?`, answer: ans, options: genOpts(ans, 20) });
+            }
+            return shuffle(qs);
+        }
+
+        function uniqueQs(questions) {
+            const seen = new Set();
+            return questions.filter(q => {
+                const k = q.question;
+                if (seen.has(k)) return false;
+                seen.add(k);
+                return true;
+            });
+        }
+
+        function generateQuestions(diff, count) {
+            count = count || 200;
+            let qs = [];
+            if (diff === 'easy') qs = genEasy(count);
+            else if (diff === 'medium') qs = genMedium(count);
+            else if (diff === 'hard') qs = genHard(count);
+            return uniqueQs(qs);
+        }
+
+        // ===== 游戏状态 =====
+        let mode = 'single';
+        let gameRunning = false;
+
+        // 单人
+        let singleIndex = 0,
+            singleStreak = 0,
+            singleBest = 0;
+        let singleQuestions = [];
+        let singleAnswered = false;
+
+        // 单人难度轮换：简单↔困难交替
+        const singleDifficultyCycle = ['easy', 'hard', 'easy', 'hard', 'easy', 'hard'];
+        const SINGLE_BATCH_SIZE = 20;
+
+        // 双人
+        const DOUBLE_TOTAL = 20;
+        let doubleQuestions = [];
+        let doubleIndex = 0;
+        let p1Score = 0,
+            p2Score = 0;
+        let p1Answered = false,
+            p2Answered = false;
+        let p1Correct = false,
+            p2Correct = false;
+        let p1Locked = false,
+            p2Locked = false;
+        let currentQ1 = null,
+            currentQ2 = null;
+
+        // ===== 获取难度 =====
+        function getSingleDifficulty() {
+            const idx = Math.floor(singleIndex / SINGLE_BATCH_SIZE);
+            return singleDifficultyCycle[idx % singleDifficultyCycle.length];
+        }
+
+        function refillSingleQuestions() {
+            const diff = getSingleDifficulty();
+            const newQs = generateQuestions(diff, 30);
+            singleQuestions = singleQuestions.concat(newQs);
+        }
+
+        // ===== 渲染 =====
+        function render() {
+            if (!gameRunning) { renderStartScreen(); return; }
+            if (mode === 'single') renderSingle();
+            else renderDouble();
+        }
+
+        function renderStartScreen() {
+            const key = 'speedmath_' + currentDifficulty;
+            $best.textContent = getBestScore(key);
+            $streak.textContent = '0';
+
+            const diffHtml = Object.keys(DIFFICULTIES).map(key => {
+                const d = DIFFICULTIES[key];
+                const selected = key === currentDifficulty ? 'selected' : '';
+                return `
+                    <div class="diff-card ${selected}" data-diff="${key}">
+                        <div class="diff-icon">${d.icon}</div>
+                        <div class="diff-name">${d.label}</div>
+                        <div class="diff-grade">${d.grade}</div>
+                        <div class="diff-desc">${d.desc}</div>
+                    </div>
+                `;
+            }).join('');
+
+            $content.innerHTML = `
+                <div class="start-screen">
+                    <div class="big-icon">⚡</div>
+                    <h2>速算对决</h2>
+                    <p class="desc">选择难度，开始挑战！</p>
+
+                    <div class="difficulty-grid">
+                        ${diffHtml}
+                    </div>
+
+                    <div class="btn-group">
+                        <button class="btn-primary" onclick="startGame('single')">🧑 单人闯关</button>
+                        <button class="btn-primary" onclick="startGame('double')" style="background:var(--info);">👫 双人对战</button>
+                    </div>
+                    <div style="margin-top:16px;font-size:0.85rem;color:var(--text-light);">
+                        ${mode === 'single' ? '单人：无限闯关，难度交替变化' : '双人：共20题，使用当前难度'}
+                    </div>
+                </div>
+            `;
+
+            $$('.diff-card', $content).forEach(card => {
+                card.addEventListener('click', function() {
+                    const diff = this.dataset.diff;
+                    if (diff === currentDifficulty) return;
+                    currentDifficulty = diff;
+                    $$('.diff-card', $content).forEach(c => c.classList.remove('selected'));
+                    this.classList.add('selected');
+                    if (gameRunning) {
+                        gameRunning = false;
+                        resetGame();
+                    }
+                    const key = 'speedmath_' + currentDifficulty;
+                    $best.textContent = getBestScore(key);
+                });
+            });
+        }
+
+        // ---------- 单人 ----------
+        function renderSingle() {
+            while (singleIndex >= singleQuestions.length) {
+                refillSingleQuestions();
+            }
+            const q = singleQuestions[singleIndex];
+            currentQ1 = q;
+
+            const diff = getSingleDifficulty();
+            const diffLabel = DIFFICULTIES[diff].label;
+            const diffIcon = DIFFICULTIES[diff].icon;
+            const tagClass = diff === 'easy' ? 'easy' : (diff === 'medium' ? 'medium' : 'hard');
+
+            const key = 'speedmath_' + currentDifficulty;
+            $best.textContent = singleBest;
+            $streak.textContent = singleStreak;
+
+            const optHtml = q.options.map((opt, idx) =>
+                `<button class="opt-single" data-idx="${idx}" data-value="${opt}" ${singleAnswered ? 'disabled' : ''}>${opt}</button>`
+            ).join('');
+
+            $content.innerHTML = `
+                <div class="single-area">
+                    <div class="progress-info">
+                        <span class="difficulty-tag ${tagClass}">${diffIcon} ${diffLabel}</span>
+                        第 ${singleIndex + 1} 题
+                    </div>
+                    <div class="question-big">${q.question}</div>
+                    <div class="options-grid-single">${optHtml}</div>
+                    <div style="text-align:center;margin-top:12px;font-size:0.9rem;color:var(--text-light);">
+                        ✅ 连对: <strong style="color:var(--accent);font-size:1.2rem;">${singleStreak}</strong> 题
+                    </div>
+                </div>
+            `;
+
+            if (!singleAnswered) {
+                $$('.opt-single', $content).forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        handleSingleAnswer(parseInt(this.dataset.value));
+                    });
+                });
+            }
+        }
+
+        function handleSingleAnswer(value) {
+            if (singleAnswered || !gameRunning) return;
+            const q = currentQ1;
+            const correct = value === q.answer;
+            singleAnswered = true;
+
+            const btns = $$('.opt-single', $content);
+            btns.forEach(btn => {
+                btn.classList.add('disabled');
+                const val = parseInt(btn.dataset.value);
+                if (val === q.answer) btn.classList.add('correct');
+                if (val === value && !correct) btn.classList.add('wrong');
+            });
+
+            if (correct) {
+                singleStreak++;
+                const key = 'speedmath_' + currentDifficulty;
+                if (singleStreak > singleBest) {
+                    singleBest = singleStreak;
+                    saveRank(key, singleBest);
+                    $best.textContent = singleBest;
+                }
+                $streak.textContent = singleStreak;
+                setTimeout(() => {
+                    singleIndex++;
+                    singleAnswered = false;
+                    render();
+                }, 400);
+            } else {
+                showResult('single', singleStreak);
+            }
+        }
+
+        // ---------- 双人 ----------
+        function renderDouble() {
+            if (doubleQuestions.length === 0) {
+                doubleQuestions = generateQuestions(currentDifficulty, 30);
+                doubleQuestions = shuffle(doubleQuestions).slice(0, DOUBLE_TOTAL);
+                doubleIndex = 0;
+                p1Score = 0;
+                p2Score = 0;
+                p1Answered = false;
+                p2Answered = false;
+                p1Locked = false;
+                p2Locked = false;
+            }
+
+            if (doubleIndex >= DOUBLE_TOTAL) {
+                showDoubleResult();
+                return;
+            }
+
+            const q1 = doubleQuestions[doubleIndex];
+            const q2 = doubleQuestions[doubleIndex];
+            currentQ1 = q1;
+            currentQ2 = q2;
+
+            const p1Display = p1Locked ? '🎉 等待下一题...' : (p1Answered ? (p1Correct ? '✅ 答对了！' : '❌ 再试一次') :
+                '👆 点击选择');
+            const p2Display = p2Locked ? '🎉 等待下一题...' : (p2Answered ? (p2Correct ? '✅ 答对了！' : '❌ 再试一次') :
+                '👆 点击选择');
+            const p1Cls = p1Locked ? 'ok' : (p1Answered ? (p1Correct ? 'ok' : 'fail') : '');
+            const p2Cls = p2Locked ? 'ok' : (p2Answered ? (p2Correct ? 'ok' : 'fail') : '');
+
+            const opts1 = q1.options.map((opt, idx) => {
+                const disabled = p1Locked || p1Answered;
+                return `<button class="duel-opt" data-idx="${idx}" data-value="${opt}" ${disabled ? 'disabled' : ''}>${opt}</button>`;
+            }).join('');
+
+            const opts2 = q2.options.map((opt, idx) => {
+                const disabled = p2Locked || p2Answered;
+                return `<button class="duel-opt" data-idx="${idx}" data-value="${opt}" ${disabled ? 'disabled' : ''}>${opt}</button>`;
+            }).join('');
+
+            const diffLabel = DIFFICULTIES[currentDifficulty].label;
+
+            $content.innerHTML = `
+                <div class="duel-container">
+                    <div class="duel-player top">
+                        <div class="duel-inner">
+                            <div class="duel-player-row">
+                                <span class="pname p2">🧑 玩家 2</span>
+                                <span class="pscore p2">${p2Score} 分</span>
+                            </div>
+                            <div class="duel-question">${q2.question}</div>
+                            <div class="duel-options">${opts2}</div>
+                            <div class="duel-status ${p2Cls}">${p2Display}</div>
+                        </div>
+                    </div>
+
+                    <div class="duel-middle">
+                        <span class="mid-left">
+                            <span class="label">🧑</span>
+                            <span class="num">${p1Score}</span>
+                        </span>
+                        <span class="mid-vs">⚔️</span>
+                        <span class="mid-right">
+                            <span class="num">${p2Score}</span>
+                            <span class="label">🧑</span>
+                        </span>
+                        <span class="mid-progress">${diffLabel} ${doubleIndex + 1}/${DOUBLE_TOTAL}</span>
+                    </div>
+
+                    <div class="duel-player bottom">
+                        <div class="duel-inner">
+                            <div class="duel-player-row">
+                                <span class="pname p1">🧑 玩家 1</span>
+                                <span class="pscore p1">${p1Score} 分</span>
+                            </div>
+                            <div class="duel-question">${q1.question}</div>
+                            <div class="duel-options">${opts1}</div>
+                            <div class="duel-status ${p1Cls}">${p1Display}</div>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            if (!p1Locked && !p1Answered) {
+                $$('.duel-player.bottom .duel-opt', $content).forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        handleDoubleAnswer(1, parseInt(this.dataset.value));
+                    });
+                });
+            }
+
+            if (!p2Locked && !p2Answered) {
+                $$('.duel-player.top .duel-opt', $content).forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        handleDoubleAnswer(2, parseInt(this.dataset.value));
+                    });
+                });
+            }
+
+            const key = 'speedmath_' + currentDifficulty;
+            $best.textContent = getBestScore(key);
+            $streak.textContent = `${p1Score} vs ${p2Score}`;
+        }
+
+        // ---------- 修正：双人答题（不显示正确答案） ----------
+function handleDoubleAnswer(player, value) {
+    if (!gameRunning) return;
+
+    if (player === 1) {
+        if (p1Locked || p1Answered) return;
+        const q = currentQ1;
+        const correct = value === q.answer;
+        p1Answered = true;
+        p1Correct = correct;
+
+        // ★ 修正：只高亮玩家选择的选项，不显示正确答案
+        const sel = '.duel-player.bottom';
+        const btns = $$(sel + ' .duel-opt', $content);
+        btns.forEach(btn => {
+            btn.classList.add('disabled');
+            const val = parseInt(btn.dataset.value);
+            if (val === value) {
+                if (correct) {
+                    btn.classList.add('correct');
+                } else {
+                    btn.classList.add('wrong');
+                }
+            }
+            // ★ 不显示正确答案！
+        });
+
+        if (correct) {
+            p1Score++;
+            p1Locked = true;
+            updateStatusText('bottom', true, '✅ 答对了！');
+            updateDoubleUI();
+            setTimeout(() => {
+                doubleIndex++;
+                p1Answered = false;
+                p2Answered = false;
+                p1Locked = false;
+                p2Locked = false;
+                p1Correct = false;
+                p2Correct = false;
+                render();
+            }, 400);
+        } else {
+            updateStatusText('bottom', false, '❌ 再试一次');
+            // 只禁用当前选项，500ms后重置
+            setTimeout(() => {
+                p1Answered = false;
+                p1Correct = false;
+                // 恢复选项可用状态
+                const btns2 = $$(sel + ' .duel-opt', $content);
+                btns2.forEach(btn => {
+                    btn.classList.remove('disabled', 'wrong', 'correct');
+                });
+                render();
+            }, 500);
+        }
+    } else {
+        // 玩家2同理
+        if (p2Locked || p2Answered) return;
+        const q = currentQ2;
+        const correct = value === q.answer;
+        p2Answered = true;
+        p2Correct = correct;
+
+        const sel = '.duel-player.top';
+        const btns = $$(sel + ' .duel-opt', $content);
+        btns.forEach(btn => {
+            btn.classList.add('disabled');
+            const val = parseInt(btn.dataset.value);
+            if (val === value) {
+                if (correct) {
+                    btn.classList.add('correct');
+                } else {
+                    btn.classList.add('wrong');
+                }
+            }
+            // ★ 不显示正确答案！
+        });
+
+        if (correct) {
+            p2Score++;
+            p2Locked = true;
+            updateStatusText('top', true, '✅ 答对了！');
+            updateDoubleUI();
+            setTimeout(() => {
+                doubleIndex++;
+                p1Answered = false;
+                p2Answered = false;
+                p1Locked = false;
+                p2Locked = false;
+                p1Correct = false;
+                p2Correct = false;
+                render();
+            }, 400);
+        } else {
+            updateStatusText('top', false, '❌ 再试一次');
+            setTimeout(() => {
+                p2Answered = false;
+                p2Correct = false;
+                const btns2 = $$(sel + ' .duel-opt', $content);
+                btns2.forEach(btn => {
+                    btn.classList.remove('disabled', 'wrong', 'correct');
+                });
+                render();
+            }, 500);
+        }
+    }
+
+    updateDoubleUI();
+    $streak.textContent = `${p1Score} vs ${p2Score}`;
+}
+
+        function highlightOpts(zone, correct, selected, isCorrect) {
+            const sel = zone === 'top' ? '.duel-player.top' : '.duel-player.bottom';
+            const btns = $$(sel + ' .duel-opt', $content);
+            btns.forEach(btn => {
+                btn.classList.add('disabled');
+                const val = parseInt(btn.dataset.value);
+                if (val === correct) btn.classList.add('correct');
+                if (val === selected && !isCorrect) btn.classList.add('wrong');
+            });
+        }
+
+        function updateStatusText(zone, correct, msg) {
+            const sel = zone === 'top' ? '.duel-player.top' : '.duel-player.bottom';
+            const el = $content.querySelector(sel + ' .duel-status');
+            if (el) {
+                el.textContent = msg;
+                el.className = 'duel-status ' + (correct ? 'ok' : 'fail');
+            }
+        }
+
+        function updateDoubleUI() {
+            const l = $content.querySelector('.duel-middle .mid-left .num');
+            const r = $content.querySelector('.duel-middle .mid-right .num');
+            if (l) l.textContent = p1Score;
+            if (r) r.textContent = p2Score;
+            const s1 = $content.querySelector('.duel-player.bottom .pscore');
+            const s2 = $content.querySelector('.duel-player.top .pscore');
+            if (s1) s1.textContent = p1Score + ' 分';
+            if (s2) s2.textContent = p2Score + ' 分';
+            const prog = $content.querySelector('.duel-middle .mid-progress');
+            if (prog) prog.textContent = `${DIFFICULTIES[currentDifficulty].label} ${doubleIndex + 1}/${DOUBLE_TOTAL}`;
+            $streak.textContent = `${p1Score} vs ${p2Score}`;
+        }
+
+        // ---------- 双人结果 ----------
+        function showDoubleResult() {
+            gameRunning = false;
+            const winner = p1Score > p2Score ? '🏆 玩家1 获胜！' :
+                (p2Score > p1Score ? '🏆 玩家2 获胜！' : '🤝 平局！');
+
+            $modalContent.innerHTML = `
+                <div class="modal-icon">${p1Score > p2Score ? '🎉' : (p2Score > p1Score ? '🎉' : '🤝')}</div>
+                <h2>${winner}</h2>
+                <div style="display:flex;justify-content:center;gap:30px;margin:12px 0;">
+                    <div><span style="color:#f5a623;">🧑 玩家1</span> <strong style="font-size:2rem;">${p1Score}</strong></div>
+                    <div style="font-size:1.5rem;color:var(--accent);">⚔️</div>
+                    <div><span style="color:#5b9bd5;">🧑 玩家2</span> <strong style="font-size:2rem;">${p2Score}</strong></div>
+                </div>
+                <div class="modal-detail">${DIFFICULTIES[currentDifficulty].label} · 共 ${DOUBLE_TOTAL} 题</div>
+                <div class="modal-actions">
+                    <button class="btn-primary" onclick="closeResult(); startGame('double');">🔄 再来一局</button>
+                    <button class="btn-secondary" onclick="closeResult(); resetGame();">🏠 返回</button>
+                </div>
+            `;
+            $modal.classList.add('active');
+        }
+
+        // ---------- 开始/结束 ----------
+        function startGame(m) {
+            mode = m;
+            gameRunning = true;
+            singleAnswered = false;
+            p1Answered = false;
+            p2Answered = false;
+            p1Locked = false;
+            p2Locked = false;
+
+            $$('#modeToggle button').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
+
+            if (m === 'single') {
+                singleIndex = 0;
+                singleStreak = 0;
+                const key = 'speedmath_' + currentDifficulty;
+                singleBest = getBestScore(key);
+                singleQuestions = [];
+                refillSingleQuestions();
+                $best.textContent = singleBest;
+                $streak.textContent = '0';
+            } else {
+                doubleIndex = 0;
+                p1Score = 0;
+                p2Score = 0;
+                p1Answered = false;
+                p2Answered = false;
+                p1Locked = false;
+                p2Locked = false;
+                const pool = generateQuestions(currentDifficulty, 30);
+                doubleQuestions = shuffle(pool).slice(0, DOUBLE_TOTAL);
+                const key = 'speedmath_' + currentDifficulty;
+                $best.textContent = getBestScore(key);
+                $streak.textContent = '0 vs 0';
+            }
+            render();
+        }
+
+        function showResult(type, score) {
+            gameRunning = false;
+            const key = 'speedmath_' + currentDifficulty;
+            const rankList = getRankList(key, 5);
+
+            let icon, title, detail;
+            if (score >= 30) { icon = '🏆';
+                title = '太厉害了！';
+                detail = '你是速算小天才！'; } else if (score >= 20) { icon = '🌟';
+                title = '表现优秀！';
+                detail = '继续挑战更高记录！'; } else if (score >= 10) { icon = '💪';
+                title = '再接再厉！';
+                detail = '多多练习会更好！'; } else if (score >= 5) { icon = '📖';
+                title = '继续加油！';
+                detail = '每天练一练，进步看得见！'; } else { icon = '🌱';
+                title = '开始你的速算之旅！';
+                detail = '每一次练习都是成长！'; }
+
+            const rankHtml = rankList.length > 0 ?
+                rankList.map((item, idx) =>
+                    `<div class="rank-item"><span>#${idx + 1}</span><span>${item.score} 连对</span></div>`
+                ).join('') :
+                '<div style="text-align:center;color:var(--text-light);padding:8px 0;">暂无记录</div>';
+
+            $modalContent.innerHTML = `
+                <div class="modal-icon">${icon}</div>
+                <h2>${title}</h2>
+                <div class="modal-score">${score}</div>
+                <div class="modal-detail">${detail} (${DIFFICULTIES[currentDifficulty].label})</div>
+                <div class="modal-rank">
+                    <div style="font-weight:700;margin-bottom:6px;">🏅 积分榜 (最高连对)</div>
+                    ${rankHtml}
+                </div>
+                <div class="modal-actions">
+                    <button class="btn-primary" onclick="closeResult(); startGame('single');">🔄 再来一局</button>
+                    <button class="btn-secondary" onclick="closeResult(); resetGame();">🏠 返回</button>
+                </div>
+            `;
+            $modal.classList.add('active');
+        }
+
+        function closeResult() { $modal.classList.remove('active'); }
+
+        function resetGame() {
+            gameRunning = false;
+            singleAnswered = false;
+            p1Answered = false;
+            p2Answered = false;
+            p1Locked = false;
+            p2Locked = false;
+            singleIndex = 0;
+            singleStreak = 0;
+            p1Score = 0;
+            p2Score = 0;
+            doubleIndex = 0;
+            $streak.textContent = '0';
+            renderStartScreen();
+        }
+
+        // ---------- 事件绑定 ----------
+        $$('#modeToggle button').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const m = this.dataset.mode;
+                if (m === mode && gameRunning) return;
+                gameRunning = false;
+                resetGame();
+                mode = m;
+                $$('#modeToggle button').forEach(b => b.classList.toggle('active', b.dataset.mode === m));
+                renderStartScreen();
+                setTimeout(() => startGame(m), 300);
+            });
+        });
+
+        $resetBtn.addEventListener('click', function() {
+            if (confirm('确定重新开始吗？')) { resetGame();
+                renderStartScreen(); }
+        });
+
+        let resizeTimer;
+        window.addEventListener('resize', function() {
+            if (gameRunning && mode === 'double') {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => render(), 300);
+            }
+        });
+
+        $modal.addEventListener('click', function(e) {
+            if (e.target === this) closeResult();
+        });
+
+        // ---------- 启动 ----------
+        renderStartScreen();
+        const key = 'speedmath_' + currentDifficulty;
+        $best.textContent = getBestScore(key);
+        console.log('⚡ 速算对决已加载');
+    </script>
+</body>
+</html>
